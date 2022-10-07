@@ -1,0 +1,6 @@
+{
+    "name": "LocalAudioSubtitles",
+    "tree": {
+        "$path": "./src"
+    }
+}
