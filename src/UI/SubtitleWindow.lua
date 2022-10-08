@@ -22,7 +22,6 @@ function SubtitleWindow.new(): Types.SubtitleWindow
     --Create the object.
     local self = {
         LastSize = 0,
-        ClosingSize = 0,
         SubtitleEntries = {},
     }
     setmetatable(self, SubtitleWindow)
@@ -85,21 +84,13 @@ function SubtitleWindow:UpdateSize(): nil
 
     --Update the background.
     local CurrentSize = #self.SubtitleEntries
+    self:TweenBackground(CurrentSize)
     if CurrentSize >= self.LastSize then
-        self:TweenBackground(CurrentSize)
         self.ScreenGui.Enabled = true
-    else
-        self.ClosingSize += 1
-        task.delay(0.25, function()
-            self.ClosingSize -= 1
-            self:TweenBackground(#self.SubtitleEntries + self.ClosingSize)
-            if #self.SubtitleEntries == 0 then
-                task.delay(0.1, function()
-                    if #self.SubtitleEntries ~= 0 then return end
-                    if self.ClosingSize ~= 0 then return end
-                    self.ScreenGui.Enabled = false
-                end)
-            end
+    elseif #self.SubtitleEntries == 0 then
+        task.delay(0.1, function()
+            if #self.SubtitleEntries ~= 0 then return end
+            self.ScreenGui.Enabled = false
         end)
     end
 	self.LastSize = CurrentSize

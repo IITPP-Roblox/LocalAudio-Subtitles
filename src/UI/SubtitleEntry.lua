@@ -76,17 +76,14 @@ end
 Destroys the entry.
 --]]
 function SubtitleEntry:Destroy(): nil
-    --Remove the entry.
-    table.remove(self.Window.SubtitleEntries, self:GetIndex())
     game:GetService("TweenService"):Create(self.TextLabel, TweenInfo.new(0.25), {
         TextTransparency = 1,
     }):Play()
     task.delay(0.25, function()
+        table.remove(self.Window.SubtitleEntries, self:GetIndex())
         self.TextLabel:Destroy()
+        self.Window:UpdateSize()
     end)
-
-    --Update the window.
-    self.Window:UpdateSize()
 end
 
 
