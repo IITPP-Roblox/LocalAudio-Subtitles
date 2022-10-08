@@ -6,7 +6,6 @@ Sets up the LocalAudio Subtitles.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalAudioSubtitles = require(ReplicatedStorage:WaitForChild("LocalAudioSubtitles"))
-local LocalAudioModule = nil
-local AudioDataModule = nil
+local LocalAudioModule = require(ReplicatedStorage:WaitForChild("LocalAudio"))
 
-LocalAudioSubtitles:SetUp()
+LocalAudioSubtitles:SetUp(LocalAudioModule)

@@ -4,6 +4,9 @@
         "$className": "DataModel",
         "ReplicatedStorage": {
             "$className": "ReplicatedStorage",
+            "LocalAudio": {
+                "$path": "./demo/modules/LocalAudio"
+            },
             "LocalAudioSubtitles": {
                 "$path": "."
             }
