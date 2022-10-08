@@ -7,6 +7,13 @@
             "LocalAudioSubtitles": {
                 "$path": "."
             }
+        },
+        "StarterPlayer": {
+            "$className": "StarterPlayer",
+            "StarterPlayerScripts": {
+                "$className": "StarterPlayerScripts",
+                "$path": "./demo/StarterPlayerScripts"
+            }
         }
     }
 }
