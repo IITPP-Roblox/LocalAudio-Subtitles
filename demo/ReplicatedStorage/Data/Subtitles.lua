@@ -17,6 +17,33 @@ return {
                 },
             },
         },
+        ASAS = {
+            Color = Color3.fromRGB(200, 200, 200),
+        },
     },
-    Macros = {},
+    Macros = {
+        NormalAnnouncementChime = {
+            Time = 0,
+            Duration = 1,
+            Message = "*Announcement chime*",
+            MessageColor = Color3.fromRGB(0, 170, 255),
+            Level = "ExtraAnnouncement",
+        },
+        WarningAnnouncement = {
+            MessageColor = Color3.fromRGB(255, 170, 0),
+            Level = "Dialog",
+        },
+        WarningAnnouncementChime = {
+            Time = 0,
+            Duration = 1,
+            Message = "*Warning announcement chime*",
+            MessageColor = Color3.fromRGB(255, 170, 0),
+            Level = "ExtraAnnouncement",
+            Macro = "WarningAnnouncement",
+        },
+    },
+    Levels = {
+        Dialog = 1,
+        ExtraAnnouncement = 2,
+    },
 }

@@ -17,7 +17,7 @@ local LocalAudioSubtitles = {
 Shows a subtitle in the window.
 --]]
 function LocalAudioSubtitles:ShowSubtitle(Message: string, Duration: number, Level: number?): nil
-    if Level and self.MinimumSubtitleLevel > Level then return end
+    if Level and self.MinimumSubtitleLevel < Level then return end
     SubtitleWindow:ShowSubtitle(Message, Duration)
 end
 

@@ -6,6 +6,44 @@ Audio data for LocalAudio.
 
 return {
     Sounds = {
+        Announcement = {
+            Normal = {
+                Id = 7750285488,
+                Length = 5.49,
+                Subtitles = {
+                    {
+                        Macro = "NormalAnnouncementChime",
+                    },
+                    {
+                        Time = 1,
+                        Message = "Attention: Service personnal, please clear helicopter hangar 1.",
+                        Speaker = "ASAS",
+                        Level = "Dialog",
+                    },
+                },
+            },
+            Warning = {
+                Id = 6277145317,
+                Length = 5.632,
+                Subtitles = {
+                    {
+                        Macro = "WarningAnnouncementChime",
+                    },
+                    {
+                        Time = 1,
+                        Message = "Warning: Safeguard failure immenent.",
+                        Speaker = "ASAS",
+                        Macro = "WarningAnnouncement",
+                    },
+                    {
+                        Time = 3.5,
+                        Message = "Unable to contain the reactor core.",
+                        Speaker = "ASAS",
+                        Macro = "WarningAnnouncement",
+                    },
+                },
+            },
+        },
         MultiSubtitleDemo = {
             Id = 7029099738,
             Length = 205.161,
