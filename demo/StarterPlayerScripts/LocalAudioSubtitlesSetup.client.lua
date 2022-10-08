@@ -10,5 +10,4 @@ local LocalAudioModule = ReplicatedStorage:WaitForChild("LocalAudio")
 local SubtitlesData = require(ReplicatedStorage:WaitForChild("Data"):WaitForChild("Subtitles"))
 
 LocalAudioSubtitles:SetUp(LocalAudioModule, SubtitlesData)
-LocalAudioSubtitles:SetSubtitleLevel(2)
 require(LocalAudioModule):SetUp()
