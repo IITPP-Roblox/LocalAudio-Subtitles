@@ -4,6 +4,30 @@ TheNexusAvenger
 Types for the LocalAudio Subtitles.
 --]]
 
+--Data
+export type SubtitleData = {
+    Time: number,
+    Duration: number?,
+    Message: string,
+    MessageColor: Color3?,
+    Speaker: string?,
+    SpeakerModifier: string?,
+    SpeakerDisplayName: string?,
+    SpeakerColor: Color3?,
+    Macro: string?,
+}
+
+export type SubtitleSpeaker = {
+    Color: Color3?,
+    DisplayName: string?,
+    Modifiers: {[string]: {Color: Color3?, DisplayName: string?}},
+}
+
+export type SubtitleDataModule = {
+    Speakers: {[string]: SubtitleSpeaker},
+    Macros: {[string]: SubtitleData},
+}
+
 --Classes
 export type SubtitleWindow = {
     new: () -> (SubtitleWindow),

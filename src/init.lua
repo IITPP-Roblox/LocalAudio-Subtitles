@@ -4,6 +4,7 @@ TheNexusAvenger
 Main module for LocalAudio Subtitles.
 --]]
 
+local EventTransform = require(script:WaitForChild("EventTransform"))
 local SubtitleWindow = require(script:WaitForChild("UI"):WaitForChild("SubtitleWindow")).new()
 
 local LocalAudioSubtitles = {}
@@ -20,10 +21,13 @@ end
 --[[
 Sets up the subtitles with LocalAudio.
 --]]
-function LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript): nil
-    --Parse the subtitles.
+function LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript, SubtitlesData): nil
+    --Transform the subtitles.
     local AudioData = require(LocalAudioModule:WaitForChild("AudioData"))
-    --TODO
+    if SubtitlesData then
+        EventTransform:SetSubtitleData(SubtitlesData)
+    end
+    EventTransform:PopulateEvents(AudioData.Sounds)
 
     --Connect the events.
     require(LocalAudioModule):OnEventFired("ShowSubtitle"):Connect(function(_, SubtitleEvent)

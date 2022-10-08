@@ -22,6 +22,10 @@
                 "$className": "StarterPlayerScripts",
                 "$path": "./demo/StarterPlayerScripts"
             }
+        },
+        "TestService": {
+            "$className": "TestService",
+            "$path": "./test"
         }
     }
 }
