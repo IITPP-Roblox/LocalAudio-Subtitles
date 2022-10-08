@@ -14,6 +14,7 @@ export type SubtitleData = {
     SpeakerModifier: string?,
     SpeakerDisplayName: string?,
     SpeakerColor: Color3?,
+    Level: string | number?,
     Macro: string?,
 }
 
@@ -26,6 +27,7 @@ export type SubtitleSpeaker = {
 export type SubtitleDataModule = {
     Speakers: {[string]: SubtitleSpeaker},
     Macros: {[string]: SubtitleData},
+    Levels: {[string]: number},
 }
 
 --Classes

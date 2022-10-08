@@ -17,6 +17,7 @@ return function()
             expect(ActualEvents[i].Time).to.be.near(ExpectedEvents[i].Time)
             expect(ActualEvents[i].Duration).to.be.near(ExpectedEvents[i].Duration)
             expect(ActualEvents[i].Message).to.equal(ExpectedEvents[i].Message)
+            expect(ActualEvents[i].Level).to.equal(ExpectedEvents[i].Level)
         end
     end
 
@@ -78,6 +79,9 @@ return function()
                 CyclicMacro3 = {
                     Macro = "CyclicMacro1"
                 },
+            },
+            Levels = {
+                CustomLevel = 2,
             },
         })
     end)
@@ -314,6 +318,49 @@ return function()
                     Message = "Speaker12: <font color=\"rgb(50,100,150)\">Test</font>",
                 },
             })
+        end)
+
+        it("should have a level with a number.", function()
+            expectThatEventsMatch({
+                {
+                    Message = "Test",
+                    Level = 2,
+                },
+            }, {
+                {
+                    Time = 0,
+                    Duration = 10,
+                    Message = "Test",
+                    Level = 2,
+                },
+            })
+        end)
+
+        it("should have a level with a string.", function()
+            expectThatEventsMatch({
+                {
+                    Message = "Test",
+                    Level = "CustomLevel",
+                },
+            }, {
+                {
+                    Time = 0,
+                    Duration = 10,
+                    Message = "Test",
+                    Level = 2,
+                },
+            })
+        end)
+
+        it("should throw an error with an unknown level.", function()
+            expect(function()
+                EventTransform:Transform({
+                    {
+                        Message = "Test",
+                        Level = "Unknown",
+                    }
+                }, 10)
+            end).to.throw("Unknown subtitle level: Unknown")
         end)
     end)
 

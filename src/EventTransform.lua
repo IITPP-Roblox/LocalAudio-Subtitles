@@ -26,6 +26,7 @@ function EventTransform:SetSubtitleData(Data: Types.SubtitleDataModule): nil
     self.SubtitleData = {
         Speakers = Data.Speakers or {},
         Macros = Data.Macros or {},
+        Levels = Data.Levels or {},
     }
 end
 
@@ -124,12 +125,22 @@ function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: 
             end
         end
 
+        --Build the level.
+        local Level = Entry.Level
+        if typeof(Level) == "string" then
+            if not self.SubtitleData.Levels[Level] then
+                error("Unknown subtitle level: "..Level)
+            end
+            Level = self.SubtitleData.Levels[Level]
+        end
+
         --Add the event.
         table.insert(Events, {
             Name = "ShowSubtitle",
             Time = Time,
             Duration = Duration,
             Message = Message,
+            Level = Level,
         })
     end
 
