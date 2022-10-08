@@ -31,7 +31,7 @@ return {
                     },
                     {
                         Time = 1,
-                        Message = "Warning: Safeguard failure immenent.",
+                        Message = "Warning: Safeguard failure imminent.",
                         Speaker = "ASAS",
                         Macro = "WarningAnnouncement",
                     },

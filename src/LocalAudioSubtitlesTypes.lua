@@ -6,7 +6,7 @@ Types for the LocalAudio Subtitles.
 
 --Data
 export type SubtitleData = {
-    Time: number,
+    Time: number?,
     Duration: number?,
     Message: string,
     MessageColor: Color3?,
@@ -21,7 +21,7 @@ export type SubtitleData = {
 export type SubtitleSpeaker = {
     Color: Color3?,
     DisplayName: string?,
-    Modifiers: {[string]: {Color: Color3?, DisplayName: string?}},
+    Modifiers: {[string]: {Color: Color3?, DisplayName: string?}}?,
 }
 
 export type SubtitleDataModule = {

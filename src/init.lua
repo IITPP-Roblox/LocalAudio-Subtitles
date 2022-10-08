@@ -5,6 +5,7 @@ Main module for LocalAudio Subtitles.
 --]]
 
 local EventTransform = require(script:WaitForChild("EventTransform"))
+local Types = require(script:WaitForChild("LocalAudioSubtitlesTypes"))
 local SubtitleWindow = require(script:WaitForChild("UI"):WaitForChild("SubtitleWindow")).new()
 
 local LocalAudioSubtitles = {
@@ -31,7 +32,7 @@ end
 --[[
 Sets up the subtitles with LocalAudio.
 --]]
-function LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript, SubtitlesData): nil
+function LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript, SubtitlesData: Types.SubtitleDataModule): nil
     --Transform the subtitles.
     local AudioData = require(LocalAudioModule:WaitForChild("AudioData"))
     if SubtitlesData then
