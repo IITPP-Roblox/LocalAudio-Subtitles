@@ -47,6 +47,7 @@ function SubtitleWindow.new(): Types.SubtitleWindow
     BackgroundFrame.AnchorPoint = Vector2.new(0, 1)
     BackgroundFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     BackgroundFrame.BackgroundTransparency = 0.5
+    BackgroundFrame.BorderSizePixel = 0
     BackgroundFrame.Position = UDim2.new(0, 0, 1, 0)
     BackgroundFrame.Size = UDim2.new(1, 0, 0, 0)
     BackgroundFrame.Parent = RowAdornFrame
