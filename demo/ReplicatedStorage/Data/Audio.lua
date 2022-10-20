@@ -42,6 +42,9 @@ return {
                         Macro = "WarningAnnouncement",
                     },
                 },
+                Properties = {
+                    RollOffMaxDistance = 50,
+                },
             },
         },
         MultiSubtitleDemo = {

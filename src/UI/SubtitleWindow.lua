@@ -63,6 +63,18 @@ function SubtitleWindow.new(): Types.SubtitleWindow
 end
 
 --[[
+Returns the entries that are visible.
+--]]
+function SubtitleWindow:GetVisibleEntries(): {Types.SubtitleEntry}
+    local VisibleSubtitles = {}
+    for _, Subtitle in self.SubtitleEntries do
+        if not Subtitle.Visible then continue end
+        table.insert(VisibleSubtitles, Subtitle)
+    end
+    return VisibleSubtitles
+end
+
+--[[
 Tweens the background to a specific size.
 --]]
 function SubtitleWindow:TweenBackground(Rows: number): nil
@@ -79,18 +91,19 @@ Updates the size of the window.
 --]]
 function SubtitleWindow:UpdateSize(): nil
     --Update the entries.
-    for _, Entry in self.SubtitleEntries do
+    local SubtitleEntries = self:GetVisibleEntries()
+    for _, Entry in SubtitleEntries do
         Entry:UpdatePosition()
     end
 
     --Update the background.
-    local CurrentSize = #self.SubtitleEntries
+    local CurrentSize = #SubtitleEntries
     self:TweenBackground(CurrentSize)
     if CurrentSize >= self.LastSize then
         self.ScreenGui.Enabled = true
-    elseif #self.SubtitleEntries == 0 then
+    elseif #SubtitleEntries == 0 then
         task.delay(0.1, function()
-            if #self.SubtitleEntries ~= 0 then return end
+            if #self:GetVisibleEntries() ~= 0 then return end
             self.ScreenGui.Enabled = false
         end)
     end
@@ -100,9 +113,9 @@ end
 --[[
 Shows a subtitle in the window.
 --]]
-function SubtitleWindow:ShowSubtitle(Message: string, Duration: number): nil
+function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, ReferenceSound: Sound?): nil
     --Create the entry.
-    local Entry = SubtitleEntry.new(Message, self)
+    local Entry = SubtitleEntry.new(Message, self, ReferenceSound)
 
     --Remove the entry after the duration.
     task.delay(Duration, function()

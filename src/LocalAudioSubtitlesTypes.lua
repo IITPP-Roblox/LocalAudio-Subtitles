@@ -32,6 +32,7 @@ export type SubtitleDataModule = {
 
 --Classes
 export type SubtitleWindow = {
+    Visible: boolean,
     new: () -> (SubtitleWindow),
     SubtitleEntries: {SubtitleEntry},
     RowAdornFrame: Frame,

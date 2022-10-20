@@ -17,9 +17,9 @@ local LocalAudioSubtitles = {
 --[[
 Shows a subtitle in the window.
 --]]
-function LocalAudioSubtitles:ShowSubtitle(Message: string, Duration: number, Level: number?): nil
+function LocalAudioSubtitles:ShowSubtitle(Message: string, Duration: number, Level: number?, ReferenceSound: Sound?): nil
     if Level and self.MinimumSubtitleLevel < Level then return end
-    SubtitleWindow:ShowSubtitle(Message, Duration)
+    SubtitleWindow:ShowSubtitle(Message, Duration, ReferenceSound)
 end
 
 --[[
@@ -41,8 +41,8 @@ function LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript, SubtitlesData
     EventTransform:PopulateEvents(AudioData.Sounds)
 
     --Connect the events.
-    require(LocalAudioModule):OnEventFired("ShowSubtitle"):Connect(function(_, SubtitleEvent)
-        self:ShowSubtitle(SubtitleEvent.Message, SubtitleEvent.Duration, SubtitleEvent.Level)
+    require(LocalAudioModule):OnEventFired("ShowSubtitle"):Connect(function(_, SubtitleEvent, Parent: Instance?, Sound: Sound)
+        self:ShowSubtitle(SubtitleEvent.Message, SubtitleEvent.Duration, SubtitleEvent.Level, Parent and Sound or nil)
     end)
 end
 

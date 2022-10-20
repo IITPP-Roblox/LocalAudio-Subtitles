@@ -4,6 +4,7 @@ TheNexusAvenger
 Buttons used for testing subtitles.
 --]]
 
+local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -15,6 +16,12 @@ local ButtonsScreenGui = Instance.new("ScreenGui")
 ButtonsScreenGui.Name = "TestButtons"
 ButtonsScreenGui.ResetOnSpawn = false
 ButtonsScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local WorldSpaceSoundPart = Instance.new("Part")
+WorldSpaceSoundPart.CFrame = CFrame.new(0, 5, 200)
+WorldSpaceSoundPart.Anchored = true
+WorldSpaceSoundPart.BrickColor = BrickColor.new("Bright blue")
+WorldSpaceSoundPart.Parent = Workspace
 
 for i, ButtonName in {"ChangeLevel", "Announcement.Normal", "Announcement.Warning", "MultiSubtitleDemo"} do
     local Button = Instance.new("TextButton")
@@ -33,7 +40,7 @@ for i, ButtonName in {"ChangeLevel", "Announcement.Normal", "Announcement.Warnin
     else
         Button.Text = "Play "..ButtonName
         Button.MouseButton1Down:Connect(function()
-            LocalAudio:PlayAudio(ButtonName)
+            LocalAudio:PlayAudio(ButtonName, ButtonName == "Announcement.Warning" and WorldSpaceSoundPart or nil)
         end)
     end
 end
