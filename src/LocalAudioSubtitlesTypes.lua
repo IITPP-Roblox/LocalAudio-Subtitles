@@ -43,6 +43,10 @@ export type SubtitleWindow = {
 export type SubtitleEntry = {
     new: (Message: string, Window: SubtitleWindow) -> (SubtitleWindow),
     UpdatePosition: (SubtitleEntry) -> (),
+    AddMultiple: (SubtitleEntry) -> (),
+    RemoveMultiple: (SubtitleEntry) -> (),
+    AddReferenceSound: (SubtitleEntry, ReferenceSound: Sound) -> (),
+    RemoveReferenceSound: (SubtitleEntry, ReferenceSound: Sound) -> (),
     Destroy: (SubtitleEntry) -> (),
 }
 

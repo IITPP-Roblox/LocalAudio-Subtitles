@@ -114,11 +114,33 @@ end
 Shows a subtitle in the window.
 --]]
 function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, ReferenceSound: Sound?): nil
+    --Add to an existing message if one exists.
+    local Entry = nil
+    for _, ExistingEntry in self.SubtitleEntries do
+        if ExistingEntry.Message ~= Message or (ReferenceSound and ExistingEntry.ReferenceSound and ExistingEntry.ReferenceSound.Parent ~= ReferenceSound.Parent) then continue end
+        if ExistingEntry.Clearing then break end
+        if ReferenceSound then
+            ExistingEntry:AddReferenceSound(ReferenceSound)
+        else
+            ExistingEntry:AddMultiple()
+        end
+        Entry = ExistingEntry
+        break
+    end
+
     --Create the entry.
-    local Entry = SubtitleEntry.new(Message, self, ReferenceSound)
+    if not Entry then
+        Entry = SubtitleEntry.new(Message, self, ReferenceSound)
+    end
 
     --Remove the entry after the duration.
     task.delay(Duration, function()
+        if ReferenceSound then
+            Entry:RemoveReferenceSound(ReferenceSound)
+        else
+            Entry:RemoveMultiple()
+        end
+        if Entry.Multiple ~= 0 then return end
         Entry:Destroy()
     end)
 end
