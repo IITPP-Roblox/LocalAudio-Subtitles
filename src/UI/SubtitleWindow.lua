@@ -117,7 +117,7 @@ function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, Referenc
     --Add to an existing message if one exists.
     local Entry = nil
     for _, ExistingEntry in self.SubtitleEntries do
-        if ExistingEntry.Message ~= Message or (ReferenceSound and ExistingEntry.ReferenceSound and ExistingEntry.ReferenceSound.Parent ~= ReferenceSound.Parent) then continue end
+        if ExistingEntry.Message ~= Message then continue end
         if ExistingEntry.Clearing then break end
         if ReferenceSound then
             ExistingEntry:AddReferenceSound(ReferenceSound)
