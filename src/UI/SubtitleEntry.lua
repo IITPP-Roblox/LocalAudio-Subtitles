@@ -111,13 +111,25 @@ function SubtitleEntry:UpdateMultipleText(): nil
     self.TextLabel.Text = Message
 
     --Update the visible text.
-    local Visible = (self.Multiple > 0)
+    local CurrentMultiple = self.Multiple
+    local Visible = (CurrentMultiple > 0)
     if Visible ~= self.Visible then
-        self.Visible = Visible
-        TweenService:Create(self.TextLabel, TweenInfo.new(0.25), {
-            TextTransparency = (Visible and 0 or 1),
-        }):Play()
-        self.Window:UpdateSize()
+        if Visible then
+            self.Visible = true
+            TweenService:Create(self.TextLabel, TweenInfo.new(0.25), {
+                TextTransparency = 0,
+            }):Play()
+            self.Window:UpdateSize()
+        else
+            TweenService:Create(self.TextLabel, TweenInfo.new(0.25), {
+                TextTransparency = 1,
+            }):Play()
+            task.delay(0.25, function()
+                if CurrentMultiple ~= self.Visible then return end
+                self.Visible = false
+                self.Window:UpdateSize()
+            end)
+        end
     end
 end
 
