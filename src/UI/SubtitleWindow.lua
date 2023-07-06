@@ -59,7 +59,7 @@ function SubtitleWindow.new(): Types.SubtitleWindow
     self.BackgroundUICorner = BackgroundUICorner
 
     --Return the object.
-    return self
+    return self :: any
 end
 
 --[[
@@ -77,7 +77,7 @@ end
 --[[
 Tweens the background to a specific size.
 --]]
-function SubtitleWindow:TweenBackground(Rows: number): nil
+function SubtitleWindow:TweenBackground(Rows: number): ()
     TweenService:Create(self.BackgroundFrame, TweenInfo.new(0.1), {
         Size = UDim2.new(1, 0, Rows, 0),
     }):Play()
@@ -89,7 +89,7 @@ end
 --[[
 Updates the size of the window.
 --]]
-function SubtitleWindow:UpdateSize(): nil
+function SubtitleWindow:UpdateSize(): ()
     --Update the entries.
     local SubtitleEntries = self:GetVisibleEntries()
     for _, Entry in SubtitleEntries do
@@ -113,7 +113,7 @@ end
 --[[
 Shows a subtitle in the window.
 --]]
-function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, ReferenceSound: Sound?): nil
+function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, ReferenceSound: Sound?): ()
     --Add to an existing message if one exists.
     local Entry = nil
     for _, ExistingEntry in self.SubtitleEntries do

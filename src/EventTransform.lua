@@ -15,14 +15,14 @@ local EventTransform = {
 --[[
 Applies a color to a string.
 --]]
-local function ApplyColor(Message: string, Color: Color3): nil
+local function ApplyColor(Message: string, Color: Color3): string
     return "<font color=\"rgb("..tostring(math.floor(Color.R * 255))..","..tostring(math.floor(Color.G * 255))..","..tostring(math.floor(Color.B * 255))..")\">"..Message.."</font>"
 end
 
 --[[
 Sets the subtitle data to use for filling in event data.
 --]]
-function EventTransform:SetSubtitleData(Data: Types.SubtitleDataModule): nil
+function EventTransform:SetSubtitleData(Data: Types.SubtitleDataModule): ()
     self.SubtitleData = {
         Speakers = Data.Speakers or {},
         Macros = Data.Macros or {},
@@ -151,7 +151,7 @@ end
 --[[
 Populates events for an audio data entry.
 --]]
-function EventTransform:PopulateEvents(Entry: table): nil
+function EventTransform:PopulateEvents(Entry: {[string]: any}): ()
     --Iterate over the tables.
     for _, SubEntry in Entry do
         if typeof(SubEntry) == "table" then
