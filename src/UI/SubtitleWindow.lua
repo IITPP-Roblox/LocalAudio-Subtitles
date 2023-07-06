@@ -90,12 +90,12 @@ function SubtitleWindow:LoadNexusVRCore(): ()
     NewScreenGui.DisplayOrder = 100
     NewScreenGui.ResetOnSpawn = false
     NewScreenGui.Enabled = self.ScreenGui.Enabled
-    NewScreenGui.FieldOfView = math.rad(55)
-    NewScreenGui.CanvasSize = Vector2.new(1400, 1000)
+    NewScreenGui.CanvasSize = Vector2.new(1200, 1000)
+	NewScreenGui.PointingEnabled = false
     NewScreenGui.Parent = self.ScreenGui.Parent
 
     --Resize the background container.
-    self.RowAdornFrame.Size = UDim2.new(0.9, 0, 0.05, 0)
+    self.RowAdornFrame.Size = UDim2.new(0.9, 0, 0.045, 0)
     self.RowAdornFrame.Parent = NewScreenGui:GetContainer()
 
     --Remove the existing ScreenGui.
