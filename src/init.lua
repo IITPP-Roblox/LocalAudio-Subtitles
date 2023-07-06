@@ -17,7 +17,7 @@ local LocalAudioSubtitles = {
 --[[
 Shows a subtitle in the window.
 --]]
-function LocalAudioSubtitles:ShowSubtitle(Message: string, Duration: number, Level: number?, ReferenceSound: Sound?): nil
+function LocalAudioSubtitles:ShowSubtitle(Message: string, Duration: number, Level: number?, ReferenceSound: Sound?): ()
     if Level and self.MinimumSubtitleLevel < Level then return end
     SubtitleWindow:ShowSubtitle(Message, Duration, ReferenceSound)
 end
@@ -25,14 +25,14 @@ end
 --[[
 Sets the minimum subtitle level to display.
 --]]
-function LocalAudioSubtitles:SetSubtitleLevel(MinimumSubtitleLevel: number): nil
+function LocalAudioSubtitles:SetSubtitleLevel(MinimumSubtitleLevel: number): ()
     self.MinimumSubtitleLevel = MinimumSubtitleLevel
 end
 
 --[[
 Sets up the subtitles with LocalAudio.
 --]]
-function LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript, SubtitlesData: Types.SubtitleDataModule): nil
+function LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript, SubtitlesData: Types.SubtitleDataModule): ()
     --Transform the subtitles.
     local AudioData = require(LocalAudioModule:WaitForChild("AudioData"))
     if SubtitlesData then

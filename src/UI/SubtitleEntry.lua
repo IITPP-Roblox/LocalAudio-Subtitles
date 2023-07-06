@@ -50,7 +50,7 @@ function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, Refere
     TextLabel.ZIndex = 2
     TextLabel.Parent = Window.RowAdornFrame
     self.TextLabel = TextLabel
-    table.insert(Window.SubtitleEntries, self)
+    table.insert(Window.SubtitleEntries, self :: any)
 
     --Update the visibility based on the audio volume.
     if ReferenceSound then
@@ -60,7 +60,7 @@ function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, Refere
     end
 
     --Return the object.
-    return self
+    return self :: any
 end
 
 --[[
@@ -93,7 +93,7 @@ end
 --[[
 Updates the position of the entry.
 --]]
-function SubtitleEntry:UpdatePosition(): nil
+function SubtitleEntry:UpdatePosition(): ()
     TweenService:Create(self.TextLabel, TweenInfo.new(0.1), {
         Position = UDim2.new(0.5, 0, 0.5 - (#self.Window:GetVisibleEntries() - self:GetVisibleIndex()), 0),
     }):Play()
@@ -102,7 +102,7 @@ end
 --[[
 Updates the text shown for the multiple.
 --]]
-function SubtitleEntry:UpdateMultipleText(): nil
+function SubtitleEntry:UpdateMultipleText(): ()
     --Update the message.
     local Message = self.Message
     if self.Multiple > 1 then
@@ -136,7 +136,7 @@ end
 --[[
 Adds a multiple to the subtitle entry.
 --]]
-function SubtitleEntry:AddMultiple(): nil
+function SubtitleEntry:AddMultiple(): ()
     self.Multiple += 1
     self:UpdateMultipleText()
 end
@@ -144,7 +144,7 @@ end
 --[[
 Removes a multiple to the subtitle entry.
 --]]
-function SubtitleEntry:RemoveMultiple(): nil
+function SubtitleEntry:RemoveMultiple(): ()
     self.Multiple += -1
     self:UpdateMultipleText()
 end
@@ -152,7 +152,7 @@ end
 --[[
 Adds a sound to reference for managing the volume.
 --]]
-function SubtitleEntry:AddReferenceSound(ReferenceSound: Sound): nil
+function SubtitleEntry:AddReferenceSound(ReferenceSound: Sound): ()
     local LastLoudnessTime = 0
     local LastAudible = false
     self.PlaybackLoudnessEvents[ReferenceSound] = RunService.Stepped:Connect(function()
@@ -184,7 +184,7 @@ end
 --[[
 Removes a sound to reference for managing the volume.
 --]]
-function SubtitleEntry:RemoveReferenceSound(ReferenceSound: Sound): nil
+function SubtitleEntry:RemoveReferenceSound(ReferenceSound: Sound): ()
     if self.PlaybackLoudnessEvents[ReferenceSound] then
         self.PlaybackLoudnessEvents[ReferenceSound]:Disconnect()
         self.PlaybackLoudnessEvents[ReferenceSound] = nil
@@ -197,7 +197,7 @@ end
 --[[
 Destroys the entry.
 --]]
-function SubtitleEntry:Destroy(): nil
+function SubtitleEntry:Destroy(): ()
     self.Clearing = true
     TweenService:Create(self.TextLabel, TweenInfo.new(0.25), {
         TextTransparency = 1,
