@@ -5,7 +5,9 @@ Main window for showing subtitles.
 --]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local Types = require(script.Parent.Parent:WaitForChild("LocalAudioSubtitlesTypes"))
 local SubtitleEntry = require(script.Parent:WaitForChild("SubtitleEntry"))
@@ -58,8 +60,47 @@ function SubtitleWindow.new(): Types.SubtitleWindow
     BackgroundUICorner.Parent = BackgroundFrame
     self.BackgroundUICorner = BackgroundUICorner
 
+    --Connect Nexus VR Core being load.
+    --Nexus VR Character Model is typically loaded from an id, so Nexus VR Core can appear at any time.
+    if UserInputService.VREnabled then
+        if ReplicatedStorage:FindFirstChild("NexusVRCore") then
+            self:LoadNexusVRCore()
+        else
+            ReplicatedStorage.ChildAdded:Connect(function(Child)
+                if Child.Name ~= "NexusVRCore" then return end
+                self:LoadNexusVRCore()
+            end)
+        end
+    end
+
     --Return the object.
     return self :: any
+end
+
+--[[
+Sets up Nexus VR Core if it is loaded.
+--]]
+function SubtitleWindow:LoadNexusVRCore(): ()
+    if not self.ScreenGui:IsA("ScreenGui") then return end
+
+    --Replace the ScreenGui.
+    local ScreenGui3D = require(ReplicatedStorage:WaitForChild("NexusVRCore"):WaitForChild("Container"):WaitForChild("ScreenGui3D")) :: any
+    local NewScreenGui = ScreenGui3D.new()
+    NewScreenGui.Name = "LocalAudioSubtitlesVR"
+    NewScreenGui.DisplayOrder = 100
+    NewScreenGui.ResetOnSpawn = false
+    NewScreenGui.Enabled = self.ScreenGui.Enabled
+    NewScreenGui.FieldOfView = math.rad(55)
+    NewScreenGui.CanvasSize = Vector2.new(1400, 1000)
+    NewScreenGui.Parent = self.ScreenGui.Parent
+
+    --Resize the background container.
+    self.RowAdornFrame.Size = UDim2.new(0.9, 0, 0.05, 0)
+    self.RowAdornFrame.Parent = NewScreenGui:GetContainer()
+
+    --Remove the existing ScreenGui.
+    self.ScreenGui:Destroy()
+    self.ScreenGui = NewScreenGui
 end
 
 --[[
