@@ -159,7 +159,7 @@ function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, Referenc
     local Entry = nil
     for _, ExistingEntry in self.SubtitleEntries do
         if ExistingEntry.Message ~= Message then continue end
-        if ExistingEntry.Clearing then break end
+        if ExistingEntry.Clearing then continue end
         if ReferenceSound then
             ExistingEntry:AddReferenceSound(ReferenceSound)
         else
