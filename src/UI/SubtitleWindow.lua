@@ -6,6 +6,7 @@ Main window for showing subtitles.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
 
 local Types = require(script.Parent.Parent:WaitForChild("LocalAudioSubtitlesTypes"))
@@ -48,12 +49,16 @@ function SubtitleWindow.new(): Types.SubtitleWindow
     local BackgroundFrame = Instance.new("Frame")
     BackgroundFrame.AnchorPoint = Vector2.new(0, 1)
     BackgroundFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    BackgroundFrame.BackgroundTransparency = 0.5
+    BackgroundFrame.BackgroundTransparency = 0.5 * GuiService.PreferredTransparency
     BackgroundFrame.BorderSizePixel = 0
     BackgroundFrame.Position = UDim2.new(0, 0, 1, 0)
     BackgroundFrame.Size = UDim2.new(1, 0, 0, 0)
     BackgroundFrame.Parent = RowAdornFrame
     self.BackgroundFrame = BackgroundFrame
+
+    GuiService:GetPropertyChangedSignal("PreferredTransparency"):Connect(function()
+        BackgroundFrame.BackgroundTransparency = 0.5 * GuiService.PreferredTransparency
+    end)
 
     local BackgroundUICorner = Instance.new("UICorner")
     BackgroundUICorner.CornerRadius = UDim.new(0.2, 0)
