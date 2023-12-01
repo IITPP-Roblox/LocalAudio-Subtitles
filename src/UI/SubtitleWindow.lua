@@ -6,11 +6,11 @@ Main window for showing subtitles.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local Types = require(script.Parent.Parent:WaitForChild("LocalAudioSubtitlesTypes"))
 local SubtitleEntry = require(script.Parent:WaitForChild("SubtitleEntry"))
+local TweenServicePlay = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("TweenServicePlay"))
 
 local SubtitleWindow = {}
 SubtitleWindow.__index = SubtitleWindow
@@ -119,12 +119,12 @@ end
 Tweens the background to a specific size.
 --]]
 function SubtitleWindow:TweenBackground(Rows: number): ()
-    TweenService:Create(self.BackgroundFrame, TweenInfo.new(0.1), {
+    TweenServicePlay(self.BackgroundFrame, TweenInfo.new(0.1), {
         Size = UDim2.new(1, 0, Rows, 0),
-    }):Play()
-    TweenService:Create(self.BackgroundUICorner, TweenInfo.new(0.1), {
+    })
+    TweenServicePlay(self.BackgroundUICorner, TweenInfo.new(0.1), {
         CornerRadius = UDim.new(0.25 * (1 / math.max(1, Rows)), 0),
-    }):Play()
+    })
 end
 
 --[[
