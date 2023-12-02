@@ -8,9 +8,9 @@ local PLAYBACK_LOUDNESS_THRESHOLD = 50
 local PLAYBACK_LOUDNESS_SILENCE_DELAY = 1
 
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 
 local Types = require(script.Parent.Parent:WaitForChild("LocalAudioSubtitlesTypes"))
+local TweenServicePlay = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("TweenServicePlay"))
 
 local SubtitleEntry = {}
 SubtitleEntry.__index = SubtitleEntry
@@ -94,9 +94,9 @@ end
 Updates the position of the entry.
 --]]
 function SubtitleEntry:UpdatePosition(): ()
-    TweenService:Create(self.TextLabel, TweenInfo.new(0.1), {
+    TweenServicePlay(self.TextLabel, TweenInfo.new(0.1), {
         Position = UDim2.new(0.5, 0, 0.5 - (#self.Window:GetVisibleEntries() - self:GetVisibleIndex()), 0),
-    }):Play()
+    })
 end
 
 --[[
@@ -116,15 +116,14 @@ function SubtitleEntry:UpdateMultipleText(): ()
     if Visible ~= self.Visible then
         if Visible then
             self.Visible = true
-            TweenService:Create(self.TextLabel, TweenInfo.new(0.25), {
+            TweenServicePlay(self.TextLabel, TweenInfo.new(0.25), {
                 TextTransparency = 0,
-            }):Play()
+            })
             self.Window:UpdateSize()
         else
-            TweenService:Create(self.TextLabel, TweenInfo.new(0.25), {
+            TweenServicePlay(self.TextLabel, TweenInfo.new(0.25), {
                 TextTransparency = 1,
-            }):Play()
-            task.delay(0.25, function()
+            }, function()
                 if CurrentMultiple ~= self.Visible then return end
                 self.Visible = false
                 self.Window:UpdateSize()
@@ -199,10 +198,9 @@ Destroys the entry.
 --]]
 function SubtitleEntry:Destroy(): ()
     self.Clearing = true
-    TweenService:Create(self.TextLabel, TweenInfo.new(0.25), {
+    TweenServicePlay(self.TextLabel, TweenInfo.new(0.25), {
         TextTransparency = 1,
-    }):Play()
-    task.delay(0.25, function()
+    }, function()
         table.remove(self.Window.SubtitleEntries, self:GetIndex())
         self.TextLabel:Destroy()
         self.Window:UpdateSize()
