@@ -123,7 +123,7 @@ function SubtitleEntry:UpdateMultipleText(): ()
             })
             self.Window:UpdateSize()
             if self.TypeWriterEnabled then
-                TypeWriter(self.TextLabel, Message)
+                task.spawn(TypeWriter, self.TextLabel, Message)
             end
         else
             TweenServicePlay(self.TextLabel, TweenInfo.new(0.25), {
