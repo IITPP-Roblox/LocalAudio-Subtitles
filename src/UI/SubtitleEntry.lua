@@ -21,7 +21,7 @@ SubtitleEntry.__index = SubtitleEntry
 --[[
 Creates a subtitle entry.
 --]]
-function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, TypeWriterEnabled: boolean, ReferenceSound: Sound?): Types.SubtitleEntry
+function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, Duration: number, TypeWriterEnabled: boolean, ReferenceSound: Sound?): Types.SubtitleEntry
     --Create the object.
     local self = {
         Message = Message,
@@ -31,7 +31,8 @@ function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, TypeWr
         Visible = false,
         PlaybackLoudnessEvents = {},
         LastReferenceSoundAudible = {},
-        TypeWriterEnabled = TypeWriterEnabled
+        TypeWriterEnabled = TypeWriterEnabled,
+        Duration = Duration,
     }
     setmetatable(self, SubtitleEntry)
 
@@ -123,7 +124,7 @@ function SubtitleEntry:UpdateMultipleText(): ()
             })
             self.Window:UpdateSize()
             if self.TypeWriterEnabled then
-                task.spawn(TypeWriter, self.TextLabel, Message)
+                task.spawn(TypeWriter, self.TextLabel, Message, (self.Duration/Message:len()))
             end
         else
             TweenServicePlay(self.TextLabel, TweenInfo.new(0.25), {

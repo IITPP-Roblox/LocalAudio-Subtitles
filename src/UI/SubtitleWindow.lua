@@ -176,7 +176,7 @@ function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, TypeWrit
 
     --Create the entry.
     if not Entry then
-        Entry = SubtitleEntry.new(Message, self, TypeWriterEnabled, ReferenceSound)
+        Entry = SubtitleEntry.new(Message, self, Duration, TypeWriterEnabled, ReferenceSound)
     end
 
     --Remove the entry after the duration.
