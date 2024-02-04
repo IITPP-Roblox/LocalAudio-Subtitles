@@ -28,6 +28,7 @@ return {
             Message = "*Announcement chime*",
             MessageColor = Color3.fromRGB(0, 170, 255),
             Level = "ExtraAnnouncement",
+            TypeWriter = true,
         },
         WarningAnnouncement = {
             MessageColor = Color3.fromRGB(255, 170, 0),
