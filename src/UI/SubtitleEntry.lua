@@ -11,6 +11,7 @@ local RunService = game:GetService("RunService")
 
 local Types = require(script.Parent.Parent:WaitForChild("LocalAudioSubtitlesTypes"))
 local TweenServicePlay = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("TweenServicePlay"))
+local TypeWriter = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("TypeWriter"))
 
 local SubtitleEntry = {}
 SubtitleEntry.__index = SubtitleEntry
@@ -20,7 +21,7 @@ SubtitleEntry.__index = SubtitleEntry
 --[[
 Creates a subtitle entry.
 --]]
-function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, ReferenceSound: Sound?): Types.SubtitleEntry
+function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, TypeWriterEnabled: boolean, ReferenceSound: Sound?): Types.SubtitleEntry
     --Create the object.
     local self = {
         Message = Message,
@@ -30,6 +31,7 @@ function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, Refere
         Visible = false,
         PlaybackLoudnessEvents = {},
         LastReferenceSoundAudible = {},
+        TypeWriterEnabled = TypeWriterEnabled
     }
     setmetatable(self, SubtitleEntry)
 
@@ -120,6 +122,9 @@ function SubtitleEntry:UpdateMultipleText(): ()
                 TextTransparency = 0,
             })
             self.Window:UpdateSize()
+            if self.TypeWriterEnabled then
+                TypeWriter(self.TextLabel, Message)
+            end
         else
             TweenServicePlay(self.TextLabel, TweenInfo.new(0.25), {
                 TextTransparency = 1,

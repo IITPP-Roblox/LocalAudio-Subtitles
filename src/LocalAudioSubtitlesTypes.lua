@@ -16,6 +16,7 @@ export type SubtitleData = {
     SpeakerColor: Color3?,
     Level: string | number?,
     Macro: string?,
+    TypeWriter: boolean?,
 }
 
 export type SubtitleSpeaker = {
