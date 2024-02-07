@@ -1,17 +1,17 @@
-return function(label: TextLabel, text: string, delayBetweenChars: number?)
-	local displayText = text
+return function(Label: TextLabel, Text: string, DelayBetweenCharacters: number?)
+	local DisplayText = Text
 
 	-- Replace line break tags so grapheme loop will not miss those characters
-	displayText = displayText:gsub("<br%s*/>", "\n")
-	displayText:gsub("<[^<>]->", "")
+	DisplayText = string.gsub(DisplayText, "<br%s*/>", "\n")
+	DisplayText = string.gsub(DisplayText, "<[^<>]->", "")
 
 	-- Set modified text on parent
-	label.Text = displayText
+	Label.Text = DisplayText
 
 	local index = 0
-	for _ in utf8.graphemes(displayText) do
+	for _ in utf8.graphemes(DisplayText) do
 		index = index + 1
-		label.MaxVisibleGraphemes = index
-		task.wait(delayBetweenChars)
+		Label.MaxVisibleGraphemes = index
+		task.wait(DelayBetweenCharacters)
 	end
 end

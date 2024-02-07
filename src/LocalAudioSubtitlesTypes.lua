@@ -38,7 +38,7 @@ export type SubtitleWindow = {
     SubtitleEntries: {SubtitleEntry},
     RowAdornFrame: Frame,
     UpdateSize: (SubtitleWindow) -> (),
-    ShowSubtitle: (SubtitleWindow, Message: string, Duration: number,TypeWriterEnabled: boolean, ReferenceSound: Sound?) -> (),
+    ShowSubtitle: (SubtitleWindow, Message: string, Duration: number, TypeWriterEnabled: boolean, ReferenceSound: Sound?) -> (),
 }
 
 export type SubtitleEntry = {

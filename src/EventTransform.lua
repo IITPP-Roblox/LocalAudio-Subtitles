@@ -141,7 +141,7 @@ function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: 
             Duration = Duration,
             Message = Message,
             Level = Level,
-            TypeWriter = Entry.TypeWriter or false
+            TypeWriter = Entry.TypeWriter or false,
         })
     end
 
