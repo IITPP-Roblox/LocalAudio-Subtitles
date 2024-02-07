@@ -159,7 +159,7 @@ end
 --[[
 Shows a subtitle in the window.
 --]]
-function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, ReferenceSound: Sound?): ()
+function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, TypeWriterEnabled: boolean, ReferenceSound: Sound?): ()
     --Add to an existing message if one exists.
     local Entry = nil
     for _, ExistingEntry in self.SubtitleEntries do
@@ -176,7 +176,7 @@ function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, Referenc
 
     --Create the entry.
     if not Entry then
-        Entry = SubtitleEntry.new(Message, self, ReferenceSound)
+        Entry = SubtitleEntry.new(Message, self, Duration, TypeWriterEnabled, ReferenceSound)
     end
 
     --Remove the entry after the duration.

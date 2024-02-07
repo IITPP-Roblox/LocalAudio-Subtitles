@@ -16,6 +16,7 @@ export type SubtitleData = {
     SpeakerColor: Color3?,
     Level: string | number?,
     Macro: string?,
+    TypeWriter: boolean?,
 }
 
 export type SubtitleSpeaker = {
@@ -37,11 +38,11 @@ export type SubtitleWindow = {
     SubtitleEntries: {SubtitleEntry},
     RowAdornFrame: Frame,
     UpdateSize: (SubtitleWindow) -> (),
-    ShowSubtitle: (SubtitleWindow, Message: string, Duration: number, ReferenceSound: Sound?) -> (),
+    ShowSubtitle: (SubtitleWindow, Message: string, Duration: number, TypeWriterEnabled: boolean, ReferenceSound: Sound?) -> (),
 }
 
 export type SubtitleEntry = {
-    new: (Message: string, Window: SubtitleWindow) -> (SubtitleWindow),
+    new: (Message: string, Window: SubtitleWindow, TypeWriterEnabled: boolean, ReferenceSound: Sound?) -> (SubtitleWindow),
     UpdatePosition: (SubtitleEntry) -> (),
     AddMultiple: (SubtitleEntry) -> (),
     RemoveMultiple: (SubtitleEntry) -> (),

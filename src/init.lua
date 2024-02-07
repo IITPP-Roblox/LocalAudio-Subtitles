@@ -42,7 +42,7 @@ function LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript, SubtitlesData
 
     --Connect the events.
     require(LocalAudioModule):OnEventFired("ShowSubtitle"):Connect(function(_, SubtitleEvent, Parent: Instance?, Sound: Sound)
-        self:ShowSubtitle(SubtitleEvent.Message, SubtitleEvent.Duration, SubtitleEvent.Level, Parent and Sound or nil)
+        self:ShowSubtitle(SubtitleEvent.Message, SubtitleEvent.Duration, SubtitleEvent.Level, SubtitleEvent.TypeWriter or false, Parent and Sound or nil)
     end)
 end
 

@@ -19,6 +19,7 @@ return {
                         Message = "Attention: Service personnal, please clear helicopter hangar 1.",
                         Speaker = "ASAS",
                         Level = "Dialog",
+                        TypeWriter = true,
                     },
                 },
             },
