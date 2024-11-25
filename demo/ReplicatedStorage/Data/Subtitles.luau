@@ -1,8 +1,5 @@
---[[
-TheNexusAvenger
-
-Data for the subtitles.
---]]
+--Data for the subtitles.
+--!strict
 
 return {
     Speakers = {
@@ -25,7 +22,7 @@ return {
         NormalAnnouncementChime = {
             Time = 0,
             Duration = 1,
-            Message = "*Announcement chime*",
+            Message = "(Announcement chime)",
             MessageColor = Color3.fromRGB(0, 170, 255),
             Level = "ExtraAnnouncement",
         },
@@ -36,7 +33,7 @@ return {
         WarningAnnouncementChime = {
             Time = 0,
             Duration = 1,
-            Message = "*Warning announcement chime*",
+            Message = "(Warning announcement chime)",
             MessageColor = Color3.fromRGB(255, 170, 0),
             Level = "ExtraAnnouncement",
             Macro = "WarningAnnouncement",

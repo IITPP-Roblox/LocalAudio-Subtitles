@@ -1,8 +1,5 @@
---[[
-TheNexusAvenger
-
-Buttons used for testing subtitles.
---]]
+--Buttons used for testing subtitles.
+--!strict
 
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
@@ -34,11 +31,11 @@ for i, ButtonName in {"ChangeLevel", "Announcement.Normal", "Announcement.Warnin
         Button.Text = "CurrentSubtitleLevel: 2"
         Button.MouseButton1Down:Connect(function()
             CurrentLevel = (CurrentLevel + 1) % 3
-            Button.Text = "CurrentSubtitleLevel: "..tostring(CurrentLevel)
+            Button.Text = `CurrentSubtitleLevel: {CurrentLevel}`
             LocalAudioSubtitles:SetSubtitleLevel(CurrentLevel)
         end)
     else
-        Button.Text = "Play "..ButtonName
+        Button.Text = `Play {ButtonName}`
         Button.MouseButton1Down:Connect(function()
             LocalAudio:PlayAudio(ButtonName, ButtonName == "Announcement.Warning" and WorldSpaceSoundPart or nil)
         end)

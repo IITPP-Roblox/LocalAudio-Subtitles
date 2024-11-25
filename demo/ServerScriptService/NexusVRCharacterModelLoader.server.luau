@@ -1,9 +1,5 @@
---[[
-TheNexusAvenger
-
-Loads Nexus VR Character Model.
-GitHub: TheNexusAvenger/Nexus-VR-Character-Model
---]]
+--Loads Nexus VR Character Model.
+--GitHub: TheNexusAvenger/Nexus-VR-Character-Model
 
 local Configuration = {
     Appearance = {
@@ -35,6 +31,14 @@ local Configuration = {
 
         --Default camera option.
         DefaultCameraOption = "Default",
+
+        --If true, Workspace.CurrentCamera.HeadLocked will be locked to false.
+        --A Roblox engineer requested keeping HeadLocked on (DisableHeadLocked = false). To keep backwards compatibility, this defaults to true.
+        DisableHeadLocked = false,
+
+        --Disables FadeOutViewOnCollision (black screen when in parts).
+        --This is provided as a workaround for games where this is a problem. Only enable if players are complaining.
+        DisableFadeOutViewOnCollision = false,
     },
     Movement = {
         --Movement methods that can be enabled by the user.
@@ -76,6 +80,24 @@ local Configuration = {
         --will be inserted into the game and loaded. This replaces
         --the default Roblox backpack.
         NexusVRBackpackEnabled = true,
+
+        --If true, version information will be hidden on the client.
+        --Version information may be detectable based on behavior, or by exploiters decompiling
+        --the client code.
+        HideVersion = false,
+
+        --If true, Enigma (https://github.com/TheNexusAvenger/Enigma) will be enabled
+        --to allow players to use additional SteamVR trackers.
+        --It is only recommended to disable if this causes problems, and said problems
+        --can't be addressed.
+        EnigmaEnabled = true,
+
+        --If true, Nexus-Appendage with IKControl will be used.
+        --Workspace.IKControlConstraintSupport MUST be set to Enabled for proper results.
+        --In Team Create, it may not set correctly. Make sure to close and re-open
+        --Roblox Studio to verify to verify it was set. Once this property defaults to Enabled
+        --or is removed, this setting will go away.
+        TEMPORARY_UseIKControl = false,
     },
 }
 

@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Either tweens a set of properties or instantly sets them if reduced motion is enabled.
---]]
+--Either tweens a set of properties or instantly sets them if reduced motion is enabled.
 --!strict
 
 local GuiService = game:GetService("GuiService")

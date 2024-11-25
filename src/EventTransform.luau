@@ -1,14 +1,13 @@
---[[
-TheNexusAvenger
-
-Transforms subtitle data to events.
---]]
+--Transforms subtitle data to events.
+--!strict
 
 local Types = require(script.Parent:WaitForChild("LocalAudioSubtitlesTypes"))
 
 local EventTransform = {
-    SubtitleData = {},
+    SubtitleData = {} :: Types.SubtitleDataModule,
 }
+
+export type EventTransform = typeof(EventTransform)
 
 
 
@@ -16,13 +15,13 @@ local EventTransform = {
 Applies a color to a string.
 --]]
 local function ApplyColor(Message: string, Color: Color3): string
-    return "<font color=\"rgb("..tostring(math.floor(Color.R * 255))..","..tostring(math.floor(Color.G * 255))..","..tostring(math.floor(Color.B * 255))..")\">"..Message.."</font>"
+    return `<font color=\"rgb({math.floor(Color.R * 255)},{math.floor(Color.G * 255)},{math.floor(Color.B * 255)})\">{Message}</font>`
 end
 
 --[[
 Sets the subtitle data to use for filling in event data.
 --]]
-function EventTransform:SetSubtitleData(Data: Types.SubtitleDataModule): ()
+function EventTransform.SetSubtitleData(self: EventTransform, Data: Types.SubtitleDataModule): ()
     self.SubtitleData = {
         Speakers = Data.Speakers or {},
         Macros = Data.Macros or {},
@@ -33,10 +32,10 @@ end
 --[[
 Transform a list of subtitle entries for an audio.
 --]]
-function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: number)
+function EventTransform.Transform(self: EventTransform, Entries: {Types.SubtitleData}, AudioDuration: number)
     --Apply the macros for the entries.
     --This must be done before iterating over the entries because of the references to Time.
-    local ProcessedEntries = {}
+    local ProcessedEntries = {} :: {Types.SubtitleData}
     for _, Entry in Entries do
         --Determine the order of macros.
         local Macros = {}
@@ -44,7 +43,7 @@ function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: 
         while CurrentEntry and CurrentEntry.Macro and self.SubtitleData.Macros[CurrentEntry.Macro] do
             for _, OtherMacro in Macros do
                 if OtherMacro == CurrentEntry.Macro then
-                    error("There is a cyclic reference of macros: "..table.concat(Macros, "->").."->"..CurrentEntry.Macro)
+                    error(`There is a cyclic reference of macros: {table.concat(Macros, "->")}->{CurrentEntry.Macro}`)
                 end
             end
             table.insert(Macros, CurrentEntry.Macro)
@@ -65,7 +64,7 @@ function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: 
                 NewEntry[Key] = Value
             end
         end
-        table.insert(ProcessedEntries, NewEntry)
+        table.insert(ProcessedEntries, NewEntry :: any)
     end
 
     --Transform the entries.
@@ -83,7 +82,7 @@ function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: 
         elseif SpeakerName then
             local Speaker = self.SubtitleData.Speakers[SpeakerName]
             if Speaker then
-                if Entry.SpeakerModifier and Speaker.Modifiers[Entry.SpeakerModifier] and Speaker.Modifiers[Entry.SpeakerModifier].DisplayName then
+                if Entry.SpeakerModifier and Speaker.Modifiers and Speaker.Modifiers[Entry.SpeakerModifier] and Speaker.Modifiers[Entry.SpeakerModifier].DisplayName then
                     SpeakerName = Speaker.Modifiers[Entry.SpeakerModifier].DisplayName
                 elseif Speaker.DisplayName then
                     SpeakerName = Speaker.DisplayName
@@ -96,8 +95,8 @@ function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: 
             elseif Entry.Speaker then
                 local Speaker = self.SubtitleData.Speakers[Entry.Speaker]
                 if Speaker then
-                    if Entry.SpeakerModifier and Speaker.Modifiers[Entry.SpeakerModifier] and Speaker.Modifiers[Entry.SpeakerModifier].Color then
-                        SpeakerName = ApplyColor(SpeakerName, Speaker.Modifiers[Entry.SpeakerModifier].Color)
+                    if Entry.SpeakerModifier and Speaker.Modifiers and Speaker.Modifiers[Entry.SpeakerModifier] and Speaker.Modifiers[Entry.SpeakerModifier].Color then
+                        SpeakerName = ApplyColor(SpeakerName, Speaker.Modifiers[Entry.SpeakerModifier].Color :: Color3)
                     elseif Speaker.Color then
                         SpeakerName = ApplyColor(SpeakerName, Speaker.Color)
                     end
@@ -111,7 +110,7 @@ function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: 
             Message = ApplyColor(Message, Entry.MessageColor)
         end
         if SpeakerName then
-            Message = SpeakerName..": "..Message 
+            Message = `{SpeakerName}: {Message}` 
         end
 
         --Build the duration.
@@ -129,7 +128,7 @@ function EventTransform:Transform(Entries: {Types.SubtitleData}, AudioDuration: 
         local Level = Entry.Level
         if typeof(Level) == "string" then
             if not self.SubtitleData.Levels[Level] then
-                error("Unknown subtitle level: "..Level)
+                error(`Unknown subtitle level: {Level}`)
             end
             Level = self.SubtitleData.Levels[Level]
         end
@@ -151,7 +150,7 @@ end
 --[[
 Populates events for an audio data entry.
 --]]
-function EventTransform:PopulateEvents(Entry: {[string]: any}): ()
+function EventTransform.PopulateEvents(self: EventTransform, Entry: {[string]: any}): ()
     --Iterate over the tables.
     for _, SubEntry in Entry do
         if typeof(SubEntry) == "table" then

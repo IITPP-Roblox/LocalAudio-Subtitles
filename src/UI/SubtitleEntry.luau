@@ -1,28 +1,36 @@
---[[
-TheNexusAvenger
-
-Entry for a subtitle in the subtitle window.
---]]
+--Entry for a subtitle in the subtitle window.
+--!strict
 
 local PLAYBACK_LOUDNESS_THRESHOLD = 50
 local PLAYBACK_LOUDNESS_SILENCE_DELAY = 1
 
 local RunService = game:GetService("RunService")
 
-local Types = require(script.Parent.Parent:WaitForChild("LocalAudioSubtitlesTypes"))
 local TweenServicePlay = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("TweenServicePlay"))
 
 local SubtitleEntry = {}
 SubtitleEntry.__index = SubtitleEntry
+
+export type SubtitleEntry = {
+    Message: string,
+    ReferenceSound: Sound?,
+    Multiple: number,
+    Window: any,
+    Visible: boolean,
+    PlaybackLoudnessEvents: {[Sound]: RBXScriptConnection},
+    LastReferenceSoundAudible: {[Sound]:  boolean},
+    TextLabel: TextLabel,
+    Clearing: boolean?,
+} & typeof(setmetatable({}, SubtitleEntry))
 
 
 
 --[[
 Creates a subtitle entry.
 --]]
-function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, ReferenceSound: Sound?): Types.SubtitleEntry
+function SubtitleEntry.new(Message: string, Window: any, ReferenceSound: Sound?): SubtitleEntry
     --Create the object.
-    local self = {
+    local self = setmetatable({
         Message = Message,
         ReferenceSound = ReferenceSound,
         Multiple = 0,
@@ -30,8 +38,7 @@ function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, Refere
         Visible = false,
         PlaybackLoudnessEvents = {},
         LastReferenceSoundAudible = {},
-    }
-    setmetatable(self, SubtitleEntry)
+    }, SubtitleEntry) :: SubtitleEntry
 
     --Create the TextLabel.
     local TextLabel = Instance.new("TextLabel")
@@ -50,7 +57,7 @@ function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, Refere
     TextLabel.ZIndex = 2
     TextLabel.Parent = Window.RowAdornFrame
     self.TextLabel = TextLabel
-    table.insert(Window.SubtitleEntries, self :: any)
+    table.insert(Window.SubtitleEntries, self)
 
     --Update the visibility based on the audio volume.
     if ReferenceSound then
@@ -60,13 +67,13 @@ function SubtitleEntry.new(Message: string, Window: Types.SubtitleWindow, Refere
     end
 
     --Return the object.
-    return self :: any
+    return self
 end
 
 --[[
 Gets the index of the subtitle.
 --]]
-function SubtitleEntry:GetIndex(): number
+function SubtitleEntry.GetIndex(self: SubtitleEntry): number
     for i, Entry in self.Window.SubtitleEntries do
         if Entry ~= self then continue end
         return i
@@ -77,7 +84,7 @@ end
 --[[
 Gets the visible index of the subtitle.
 --]]
-function SubtitleEntry:GetVisibleIndex(): number
+function SubtitleEntry.GetVisibleIndex(self: SubtitleEntry): number
     local CurrentIndex = 1
     for _, Entry in self.Window:GetVisibleEntries() do
         if Entry == self then
@@ -93,7 +100,7 @@ end
 --[[
 Updates the position of the entry.
 --]]
-function SubtitleEntry:UpdatePosition(): ()
+function SubtitleEntry.UpdatePosition(self: SubtitleEntry): ()
     TweenServicePlay(self.TextLabel, TweenInfo.new(0.1), {
         Position = UDim2.new(0.5, 0, 0.5 - (#self.Window:GetVisibleEntries() - self:GetVisibleIndex()), 0),
     })
@@ -102,11 +109,11 @@ end
 --[[
 Updates the text shown for the multiple.
 --]]
-function SubtitleEntry:UpdateMultipleText(): ()
+function SubtitleEntry.UpdateMultipleText(self: SubtitleEntry): ()
     --Update the message.
     local Message = self.Message
     if self.Multiple > 1 then
-        Message ..= " <font color=\"rgb(180,180,180)\"><i>("..tostring(self.Multiple).."x)</i></font>"
+        Message ..= ` <font color="rgb(180,180,180)"><i>({self.Multiple}x)</i></font>`
     end
     self.TextLabel.Text = Message
 
@@ -124,7 +131,7 @@ function SubtitleEntry:UpdateMultipleText(): ()
             TweenServicePlay(self.TextLabel, TweenInfo.new(0.25), {
                 TextTransparency = 1,
             }, function()
-                if CurrentMultiple ~= self.Visible then return end
+                if Visible ~= self.Visible then return end
                 self.Visible = false
                 self.Window:UpdateSize()
             end)
@@ -135,7 +142,7 @@ end
 --[[
 Adds a multiple to the subtitle entry.
 --]]
-function SubtitleEntry:AddMultiple(): ()
+function SubtitleEntry.AddMultiple(self: SubtitleEntry): ()
     self.Multiple += 1
     self:UpdateMultipleText()
 end
@@ -143,7 +150,7 @@ end
 --[[
 Removes a multiple to the subtitle entry.
 --]]
-function SubtitleEntry:RemoveMultiple(): ()
+function SubtitleEntry.RemoveMultiple(self: SubtitleEntry): ()
     self.Multiple += -1
     self:UpdateMultipleText()
 end
@@ -151,7 +158,7 @@ end
 --[[
 Adds a sound to reference for managing the volume.
 --]]
-function SubtitleEntry:AddReferenceSound(ReferenceSound: Sound): ()
+function SubtitleEntry.AddReferenceSound(self: SubtitleEntry, ReferenceSound: Sound): ()
     local LastLoudnessTime = 0
     local LastAudible = false
     self.PlaybackLoudnessEvents[ReferenceSound] = RunService.Stepped:Connect(function()
@@ -183,7 +190,7 @@ end
 --[[
 Removes a sound to reference for managing the volume.
 --]]
-function SubtitleEntry:RemoveReferenceSound(ReferenceSound: Sound): ()
+function SubtitleEntry.RemoveReferenceSound(self: SubtitleEntry, ReferenceSound: Sound): ()
     if self.PlaybackLoudnessEvents[ReferenceSound] then
         self.PlaybackLoudnessEvents[ReferenceSound]:Disconnect()
         self.PlaybackLoudnessEvents[ReferenceSound] = nil
@@ -196,7 +203,7 @@ end
 --[[
 Destroys the entry.
 --]]
-function SubtitleEntry:Destroy(): ()
+function SubtitleEntry.Destroy(self: SubtitleEntry): ()
     self.Clearing = true
     TweenServicePlay(self.TextLabel, TweenInfo.new(0.25), {
         TextTransparency = 1,

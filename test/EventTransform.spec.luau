@@ -1,15 +1,12 @@
---[[
-TheNexusAvenger
-
-Tests the EventTransform class.
---]]
+--Tests the EventTransform class.
+--!strict
 
 local EventTransform = require(game:GetService("ReplicatedStorage"):WaitForChild("LocalAudioSubtitles"):WaitForChild("EventTransform"))
 
 
 
 return function()
-    local function expectThatEventsMatch(SubtitleEntries, ExpectedEvents)
+    local function expectThatEventsMatch(SubtitleEntries: any, ExpectedEvents: any)
         local ActualEvents = EventTransform:Transform(SubtitleEntries, 10)
         expect(#ActualEvents).to.equal(#ActualEvents)
         for i = 1, #ExpectedEvents do
@@ -83,7 +80,7 @@ return function()
             Levels = {
                 CustomLevel = 2,
             },
-        })
+        } :: any)
     end)
 
     --Run the tests.
@@ -449,7 +446,7 @@ return function()
                     {
                         Macro = "CyclicMacro1",
                     }
-                }, 10)
+                } :: any, 10)
             end).to.throw("There is a cyclic reference of macros: CyclicMacro1->CyclicMacro2->CyclicMacro3->CyclicMacro1")
         end)
     end)
@@ -520,9 +517,10 @@ return function()
             expect(AudioData.Events[1].Message).to.be.equal("Test 1")
             expect(AudioData.Events[1].Time).to.be.near(0)
             expect(AudioData.Events[1].Duration).to.be.near(2)
-            expect(AudioData.SubEntry.Events[1].Message).to.be.equal("Test 2")
-            expect(AudioData.SubEntry.Events[1].Time).to.be.near(0)
-            expect(AudioData.SubEntry.Events[1].Duration).to.be.near(3)
+            local SubEntry = AudioData.SubEntry :: any
+            expect(SubEntry.Events[1].Message).to.be.equal("Test 2")
+            expect(SubEntry.Events[1].Time).to.be.near(0)
+            expect(SubEntry.Events[1].Duration).to.be.near(3)
         end)
     end)
 end
