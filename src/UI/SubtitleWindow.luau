@@ -1,33 +1,37 @@
---[[
-TheNexusAvenger
-
-Main window for showing subtitles.
---]]
+--Main window for showing subtitles.
+--!strict
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
 
-local Types = require(script.Parent.Parent:WaitForChild("LocalAudioSubtitlesTypes"))
 local SubtitleEntry = require(script.Parent:WaitForChild("SubtitleEntry"))
 local TweenServicePlay = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("TweenServicePlay"))
 
 local SubtitleWindow = {}
 SubtitleWindow.__index = SubtitleWindow
 
+export type SubtitleWindow = {
+    LastSize: number,
+    SubtitleEntries: {SubtitleEntry.SubtitleEntry},
+    ScreenGui: ScreenGui,
+    RowAdornFrame: Frame,
+    BackgroundFrame: Frame,
+    BackgroundUICorner: UICorner,
+} & typeof(setmetatable({}, SubtitleWindow))
+
 
 
 --[[
 Creates a subtitle window.
 --]]
-function SubtitleWindow.new(): Types.SubtitleWindow
+function SubtitleWindow.new(): SubtitleWindow
     --Create the object.
-    local self = {
+    local self = setmetatable({
         LastSize = 0,
         SubtitleEntries = {},
-    }
-    setmetatable(self, SubtitleWindow)
+    }, SubtitleWindow) :: SubtitleWindow
 
     --Create the user interface.
     local SubtitlesScreenGui = Instance.new("ScreenGui")
@@ -79,13 +83,13 @@ function SubtitleWindow.new(): Types.SubtitleWindow
     end
 
     --Return the object.
-    return self :: any
+    return self 
 end
 
 --[[
 Sets up Nexus VR Core if it is loaded.
 --]]
-function SubtitleWindow:LoadNexusVRCore(): ()
+function SubtitleWindow.LoadNexusVRCore(self: SubtitleWindow): ()
     if not self.ScreenGui:IsA("ScreenGui") then return end
 
     --Replace the ScreenGui.
@@ -111,7 +115,7 @@ end
 --[[
 Returns the entries that are visible.
 --]]
-function SubtitleWindow:GetVisibleEntries(): {Types.SubtitleEntry}
+function SubtitleWindow.GetVisibleEntries(self: SubtitleWindow): {SubtitleEntry.SubtitleEntry}
     local VisibleSubtitles = {}
     for _, Subtitle in self.SubtitleEntries do
         if not Subtitle.Visible then continue end
@@ -123,7 +127,7 @@ end
 --[[
 Tweens the background to a specific size.
 --]]
-function SubtitleWindow:TweenBackground(Rows: number): ()
+function SubtitleWindow.TweenBackground(self: SubtitleWindow, Rows: number): ()
     TweenServicePlay(self.BackgroundFrame, TweenInfo.new(0.1), {
         Size = UDim2.new(1, 0, Rows, 0),
     })
@@ -135,7 +139,7 @@ end
 --[[
 Updates the size of the window.
 --]]
-function SubtitleWindow:UpdateSize(): ()
+function SubtitleWindow.UpdateSize(self: SubtitleWindow): ()
     --Update the entries.
     local SubtitleEntries = self:GetVisibleEntries()
     for _, Entry in SubtitleEntries do
@@ -159,7 +163,7 @@ end
 --[[
 Shows a subtitle in the window.
 --]]
-function SubtitleWindow:ShowSubtitle(Message: string, Duration: number, ReferenceSound: Sound?): ()
+function SubtitleWindow.ShowSubtitle(self: SubtitleWindow, Message: string, Duration: number, ReferenceSound: Sound?): ()
     --Add to an existing message if one exists.
     local Entry = nil
     for _, ExistingEntry in self.SubtitleEntries do

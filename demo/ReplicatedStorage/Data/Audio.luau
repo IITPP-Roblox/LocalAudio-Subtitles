@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Audio data for LocalAudio.
---]]
+--Audio data for LocalAudio.
 
 return {
     Sounds = {
