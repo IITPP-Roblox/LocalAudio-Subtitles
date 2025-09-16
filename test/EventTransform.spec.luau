@@ -1,7 +1,7 @@
 --Tests the EventTransform class.
 --!strict
 
-local EventTransform = require(game:GetService("ReplicatedStorage"):WaitForChild("LocalAudioSubtitles"):WaitForChild("EventTransform"))
+local EventTransform = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("LocalAudioSubtitles"):WaitForChild("EventTransform"))
 
 
 

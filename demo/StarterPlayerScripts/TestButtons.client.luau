@@ -5,8 +5,8 @@ local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local LocalAudio = require(ReplicatedStorage:WaitForChild("LocalAudio"))
-local LocalAudioSubtitles = require(ReplicatedStorage:WaitForChild("LocalAudioSubtitles"))
+local LocalAudio = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("LocalAudio"))
+local LocalAudioSubtitles = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("LocalAudioSubtitles"))
 LocalAudioSubtitles:SetSubtitleLevel(2)
 
 local ButtonsScreenGui = Instance.new("ScreenGui")

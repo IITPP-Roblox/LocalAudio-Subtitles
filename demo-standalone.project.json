@@ -8,7 +8,7 @@
             "Packages": {
                 "$path": "./Packages",
                 "LocalAudioSubtitles": {
-                    "$path": "."
+                    "$path": "./default-standalone.project.json"
                 }
             }
         },

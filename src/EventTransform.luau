@@ -107,7 +107,7 @@ function EventTransform.Transform(self: EventTransform, Entries: {Types.Subtitle
         --Build the message.
         local Message = Entry.Message
         if Entry.MessageColor then
-            Message = ApplyColor(Message, Entry.MessageColor)
+            Message = ApplyColor(Message :: string, Entry.MessageColor)
         end
         if SpeakerName then
             Message = `{SpeakerName}: {Message}` 

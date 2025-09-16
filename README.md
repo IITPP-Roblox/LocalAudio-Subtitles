@@ -5,12 +5,22 @@ for showing subtitles when audios are played.
 # Setup
 ## Project
 This project uses [Rojo](https://github.com/rojo-rbx/rojo) for the project
-structure. Two project files in included in the repository.
-* `default.project.json` - Structure for just the module. Intended for use
-  with `rojo build` and to be included in Rojo project structures as a
-  dependency.
+structure. Four project files in included in the repository.
+* `default.project.json` - Structure for just the module within Wally projects.
+* `default-standalone.project.json` - Structure for just the module to
+  be published as a standalone module outside of Wally.
 * `demo.project.json` - Full Roblox place that can be synced into Roblox
-  studio and ran with demo audios.
+  studio and ran with demo models.
+* `demo-standalone.project.json` - Full Roblox place that can be synced
+  into Roblox studio and ran with demo models, but with the standalone
+  module setup.
+
+To set up the project dependencies with types:
+```bash
+wally install
+rojo sourcemap demo.project.json --output sourcemap.json
+wally-package-types --sourcemap sourcemap.json Packages/
+```
 
 ## Game
 ### Loading
@@ -19,11 +29,11 @@ is recommended to initialize the subtitles module before `LocalAudio`.
 ```lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalAudioSubtitles = require(ReplicatedStorage:WaitForChild("LocalAudioSubtitles"))
-local LocalAudioModule = ReplicatedStorage:WaitForChild("LocalAudio")
+local LocalAudio = require(ReplicatedStorage:WaitForChild("LocalAudio"))
 local SubtitlesData = require(ReplicatedStorage:WaitForChild("Data"):WaitForChild("Subtitles"))
 
-LocalAudioSubtitles:SetUp(LocalAudioModule, SubtitlesData)
-require(LocalAudioModule):SetUp()
+LocalAudioSubtitles:SetUp(SubtitlesData)
+LocalAudio:SetUp()
 ```
 
 ### Subtitle Entries
@@ -296,10 +306,9 @@ subtitles. Contained are up to 3 tables:
 - `LocalAudioSubtitles:SetSubtitleLevel(MinimumSubtitleLevel: number): nil` - 
   Sets the minimum subtitle subtitle level to display. By
   default, `0` is set.
-- `LocalAudioSubtitles:SetUp(LocalAudioModule: ModuleScript, SubtitlesData: SubtitleDataModule): nil` -
+- `LocalAudioSubtitles:SetUp(SubtitlesData: SubtitleDataModule): nil` -
   Prepares the `LocalAudio` events with subtitles and connects
-  listening for subtitles to be requested. The `LocalAudioModule`
-  must be the `ModuleScript` for `LocalAudio` while `SubtitlesData`
+  listening for subtitles to be requested. The `SubtitlesData`
   has to be the table data (not `ModuleScript`) of the common
   subtitles data.
 

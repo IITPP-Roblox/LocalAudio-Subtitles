@@ -1,0 +1,16 @@
+[package]
+name = "iitpp-roblox/localaudio-subtitles"
+repository = "https://github.com/IITPP-Roblox/LocalAudio-Subtitles"
+description = "User interface extension for LocalAudio for adding subtitles."
+license = "MIT"
+authors = ["IITPP-Roblox"]
+version = "1.5.0"
+
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+exclude = ["**"]
+include = ["dist", "dist/*", "src", "src/*", "default.project.json", "wally.lock", "wally.toml"]
+
+[dependencies]
+LocalAudio = "iitpp-roblox/localaudio@1.5.2"
