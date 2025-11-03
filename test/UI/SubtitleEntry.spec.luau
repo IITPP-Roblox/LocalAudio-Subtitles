@@ -2,6 +2,7 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GuiService = game:GetService("GuiService")
 local TextService = game:GetService("TextService")
 
 local Fusion = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Fusion"))
@@ -21,6 +22,7 @@ return function()
     end)
 
     afterEach(function()
+        SubtitleEntry._GuiService = GuiService
         SubtitleEntry._TextService = TextService
         TestSubtitleEntry:Destroy()
     end)
@@ -28,7 +30,7 @@ return function()
     describe("A SubtitleEntry", function()
         it("should be created correctly.", function()
             expect(Fusion.peek(TestSubtitleEntry.Multiple)).to.equal(1)
-            expect(Fusion.peek(TestSubtitleEntry.Visible)).to.equal(true)
+            expect(Fusion.peek(TestSubtitleEntry.VisibleState)).to.equal("Visible")
             expect(Fusion.peek(TestSubtitleEntry.DisplayMessage)).to.equal("Test message")
             expect(Fusion.peek(TestSubtitleEntry.Height)).to.equal(20)
         end)
@@ -36,15 +38,39 @@ return function()
         it("should handle multiples.", function()
             TestSubtitleEntry:AddMultiple()
             expect(Fusion.peek(TestSubtitleEntry.Multiple)).to.equal(2)
-            expect(Fusion.peek(TestSubtitleEntry.Visible)).to.equal(true)
+            expect(Fusion.peek(TestSubtitleEntry.VisibleState)).to.equal("Visible")
             expect(Fusion.peek(TestSubtitleEntry.DisplayMessage)).to.equal("Test message <font color=\"rgb(180,180,180)\"><i>(2x)</i></font>")
             expect(Fusion.peek(TestSubtitleEntry.Height)).to.equal(20)
         
             TestSubtitleEntry:RemoveMultiple()
             expect(Fusion.peek(TestSubtitleEntry.Multiple)).to.equal(1)
-            expect(Fusion.peek(TestSubtitleEntry.Visible)).to.equal(true)
+            expect(Fusion.peek(TestSubtitleEntry.VisibleState)).to.equal("Visible")
             expect(Fusion.peek(TestSubtitleEntry.DisplayMessage)).to.equal("Test message")
             expect(Fusion.peek(TestSubtitleEntry.Height)).to.equal(20)
+        end)
+
+        it("should start hiding when clearing.", function()
+            SubtitleEntry._GuiService = {
+                ReducedMotionEnabled = false,
+            } :: any
+
+            expect(Fusion.peek(TestSubtitleEntry.Multiple)).to.equal(1)
+            
+            TestSubtitleEntry:RemoveMultiple()
+            expect(Fusion.peek(TestSubtitleEntry.Multiple)).to.equal(0)
+            expect(Fusion.peek(TestSubtitleEntry.VisibleState)).to.equal("Hiding")
+        end)
+
+        it("should start hide when clearing.", function()
+            SubtitleEntry._GuiService = {
+                ReducedMotionEnabled = true,
+            } :: any
+
+            expect(Fusion.peek(TestSubtitleEntry.Multiple)).to.equal(1)
+            
+            TestSubtitleEntry:RemoveMultiple()
+            expect(Fusion.peek(TestSubtitleEntry.Multiple)).to.equal(0)
+            expect(Fusion.peek(TestSubtitleEntry.VisibleState)).to.equal("Hidden")
         end)
     end)
 end

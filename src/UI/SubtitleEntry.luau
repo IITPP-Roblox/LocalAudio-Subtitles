@@ -1,26 +1,32 @@
 --Entry for a subtitle in the subtitle window.
 --!strict
 
+local FADE_ANIMATION_TIME_SECONDS = 0.1
 local PLAYBACK_LOUDNESS_THRESHOLD = 100
 local PLAYBACK_LOUDNESS_SILENCE_DELAY = 1
 
 local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
 local TextService = game:GetService("TextService")
 
 local Fusion = require(script.Parent.Parent:WaitForChild("Packages"):WaitForChild("Fusion"))
 
 local SubtitleEntry = {}
+SubtitleEntry.FadeAnimationTimeSeconds = FADE_ANIMATION_TIME_SECONDS
+SubtitleEntry._GuiService = GuiService
 SubtitleEntry._TextService = TextService
 SubtitleEntry.__index = SubtitleEntry
 
+export type SubtitleVisibleState = "Visible" | "Hiding" | "Hidden"
 export type SubtitleEntry = {
     Message: string,
     ReferenceSound: Sound?,
     Multiple: Fusion.Value<number>,
     Clearing: Fusion.Value<boolean>,
-    Visible: Fusion.UsedAs<boolean>,
+    VisibleState: Fusion.Value<SubtitleVisibleState>,
     DisplayMessage: Fusion.UsedAs<string>,
     Height: Fusion.UsedAs<number>,
+    YOffset: Fusion.Value<number>,
     _Scope: Fusion.Scope<typeof(Fusion)>,
     _PlaybackLoudnessEvents: {[Sound]: RBXScriptConnection},
     _LastReferenceSoundAudible: {[Sound]:  boolean},
@@ -35,9 +41,7 @@ function SubtitleEntry.new(Scope: Fusion.Scope<typeof(Fusion)>, Message: string,
     --Create the values.
     local Multiple = Scope:Value(0)
     local Clearing = Scope:Value(false)
-    local Visible = Scope:Computed(function(use)
-        return not use(Clearing) and use(Multiple) > 0
-    end) :: Fusion.UsedAs<boolean>
+    local VisibleState = Scope:Value("Hidden" :: any) :: Fusion.Value<SubtitleVisibleState>
     local DisplayMessage = Scope:Computed(function(use)
         local CurrentMultiple = use(Multiple)
         if CurrentMultiple > 1 then
@@ -61,9 +65,10 @@ function SubtitleEntry.new(Scope: Fusion.Scope<typeof(Fusion)>, Message: string,
         ReferenceSound = ReferenceSound,
         Multiple = Multiple,
         Clearing = Clearing,
-        Visible = Visible,
+        VisibleState = VisibleState,
         DisplayMessage = DisplayMessage,
         Height = Height,
+        YOffset = Scope:Value(0),
         _Scope = Scope,
         _PlaybackLoudnessEvents = {},
         _LastReferenceSoundAudible = {},
@@ -75,9 +80,37 @@ function SubtitleEntry.new(Scope: Fusion.Scope<typeof(Fusion)>, Message: string,
     else
         self:AddMultiple()
     end
+    
+    --Update the visibility state.
+    Scope:Observer(self.Multiple):onBind(function()
+        self:UpdateVisibleState()
+    end)
+    Scope:Observer(self.Clearing):onBind(function()
+        self:UpdateVisibleState()
+    end)
 
     --Return the object.
     return self
+end
+
+--[[
+Updates the visible state.
+--]]
+function SubtitleEntry.UpdateVisibleState(self: SubtitleEntry): ()
+    if Fusion.peek(self.Multiple) > 0 and not Fusion.peek(self.Clearing) then
+        --Set the state as visible.
+        self.VisibleState:set("Visible")
+    elseif Fusion.peek(self.VisibleState) ~= "Hidden" then
+        --Hide the visible state.
+        if self._GuiService.ReducedMotionEnabled then
+            self.VisibleState:set("Hidden")
+        else
+            self.VisibleState:set("Hiding")
+            task.wait(FADE_ANIMATION_TIME_SECONDS)
+            if Fusion.peek(self.VisibleState) ~= "Hiding" then return end
+            self.VisibleState:set("Hidden")
+        end
+    end
 end
 
 --[[
@@ -143,14 +176,20 @@ end
 Destroys the entry.
 --]]
 function SubtitleEntry.Destroy(self: SubtitleEntry): ()
+    --Start clearing the entry.
     if Fusion.peek(self.Clearing) then return end
     self.Clearing:set(true)
-    self._Scope:doCleanup()
 
+    --Disconnect any resources still in use.
     for _, Event in self._PlaybackLoudnessEvents do
         Event:Disconnect()
     end
     self._PlaybackLoudnessEvents = {}
+
+    --After the animation fade delay, finally destroy the scope.
+    task.delay(FADE_ANIMATION_TIME_SECONDS, function()
+        self._Scope:doCleanup()
+    end)
 end
 
 

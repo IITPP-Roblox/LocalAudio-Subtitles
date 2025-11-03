@@ -1,5 +1,4 @@
 --Stores a collection of subtitle entires.
---Mainly used to flatten the structure for easier displaying.
 --!strict
 
 local SubtitleEntry = require(script.Parent:WaitForChild("SubtitleEntry"))
@@ -8,13 +7,8 @@ local Fusion = require(script.Parent.Parent:WaitForChild("Packages"):WaitForChil
 local SubtitleEntryCollection = {}
 SubtitleEntryCollection.__index = SubtitleEntryCollection
 
-export type SubtitleEntryData = {
-    Message: string,
-    Height: number,
-    YOffset: number,
-}
 export type SubtitleEntryCollection = {
-    DisplayedEntries: Fusion.Value<{SubtitleEntryData}>,
+    DisplayedEntries: Fusion.Value<{SubtitleEntry.SubtitleEntry}>,
     _Entries: {SubtitleEntry.SubtitleEntry},
     _Scope: Fusion.Scope<typeof(Fusion)>,
     _TextSize: Fusion.UsedAs<number>,
@@ -26,7 +20,8 @@ export type SubtitleEntryCollection = {
 --[[
 Creates a subtitle entry collection.
 --]]
-function SubtitleEntryCollection.new(Scope: Fusion.Scope<typeof(Fusion)>, TextSize: Fusion.UsedAs<number>, MaxWidth: Fusion.UsedAs<number>): SubtitleEntryCollection
+function SubtitleEntryCollection.new(TextSize: Fusion.UsedAs<number>, MaxWidth: Fusion.UsedAs<number>): SubtitleEntryCollection
+    local Scope = Fusion.scoped(Fusion) :: Fusion.Scope<typeof(Fusion)>
     return setmetatable({
         DisplayedEntries = Scope:Value({}),
         _Entries = {},
@@ -44,24 +39,19 @@ function SubtitleEntryCollection._UpdateDisplayedEntries(self: SubtitleEntryColl
     local NewEntries = {}
     local TotalHeight = 0
     for _, Entry in self._Entries do
-        if not Fusion.peek(Entry.Visible) then continue end
-        local Height = Fusion.peek(Entry.Height)
-        table.insert(NewEntries, {
-            Message = Fusion.peek(Entry.DisplayMessage),
-            Height = Height,
-            YOffset = 0,
-        })
-        TotalHeight += Height
+        if Fusion.peek(Entry.VisibleState) == "Hidden" then continue end
+        table.insert(NewEntries, Entry)
+        TotalHeight += Fusion.peek(Entry.Height)
     end
 
     --Update the Y offsets.
     for _, Entry in NewEntries do
-        TotalHeight += -Entry.Height
-        Entry.YOffset = -TotalHeight
+        TotalHeight += -Fusion.peek(Entry.Height)
+        Entry.YOffset:set(-TotalHeight)
     end
 
     --Store the entries.
-    self.DisplayedEntries:set(NewEntries)
+    self.DisplayedEntries:set(NewEntries :: {SubtitleEntry.SubtitleEntry})
 end
 
 --[[
@@ -90,10 +80,17 @@ function SubtitleEntryCollection.AddEntry(self: SubtitleEntryCollection, Message
         table.insert(self._Entries, NewEntry)
         Entry = NewEntry
 
-        EntryScope:Observer(NewEntry.Visible):onChange(function()
+        --Add a function ran on destroy.
+        table.insert(EntryScope, function()
+            for i = #self._Entries, 1, -1 do
+                if self._Entries[i] ~= Entry then continue end
+                table.remove(self._Entries, i)
+            end
             self:_UpdateDisplayedEntries()
         end)
-        EntryScope:Observer(NewEntry.DisplayMessage):onChange(function()
+
+        --Observe changes to the state.
+        EntryScope:Observer(NewEntry.VisibleState):onChange(function()
             self:_UpdateDisplayedEntries()
         end)
         EntryScope:Observer(NewEntry.Height):onChange(function()
@@ -113,12 +110,7 @@ function SubtitleEntryCollection.AddEntry(self: SubtitleEntryCollection, Message
 
         --Remove the entry if no sounds exist.
         if Fusion.peek(Entry.Multiple) ~= 0 then return end
-        for i = #self._Entries, 1, -1 do
-            if self._Entries[i] ~= Entry then continue end
-            table.remove(self._Entries, i)
-        end
         Entry:Destroy()
-        self:_UpdateDisplayedEntries()
     end)
 end
 
