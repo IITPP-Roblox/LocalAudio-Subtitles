@@ -9,13 +9,13 @@ local BOTTOM_MARGIN_PIXEL = 5
 
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
 
 local SubtitleEntry = require(script.Parent:WaitForChild("SubtitleEntry"))
 local SubtitleEntryCollection = require(script.Parent:WaitForChild("SubtitleEntryCollection"))
 local Fusion = require(script.Parent.Parent:WaitForChild("Packages"):WaitForChild("Fusion"))
+local NexusVRCore = require(script.Parent.Parent:WaitForChild("Packages"):WaitForChild("NexusVRCore"))
 
 local Children = Fusion.Children
 
@@ -41,9 +41,14 @@ function SubtitleWindow.new(): SubtitleWindow
     end)
 
     local ViewportSize = Scope:Value(Workspace.CurrentCamera.ViewportSize)
-    Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-        ViewportSize:set(Workspace.CurrentCamera.ViewportSize)
-    end)
+    if UserInputService.VREnabled then
+        --VR uses a custom container at a fixed size.
+        ViewportSize:set(Vector2.new(1200, 800))
+    else
+        Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+            ViewportSize:set(Workspace.CurrentCamera.ViewportSize)
+        end)
+    end
 
     local TextSize = Scope:Computed(function(use)
         return math.max(MINIMUM_TEXT_SIZE, (UserInputService.VREnabled and TEXT_SIZE_RELATIVE_VR or TEXT_SIZE_RELATIVE) * use(ViewportSize).Y)
@@ -145,15 +150,36 @@ function SubtitleWindow.new(): SubtitleWindow
         return UDim2.new(1, 0, 0, TotalHeight)
     end), PropertyTween)
 
+    --Create the ScreenGui.
+    local ScreenGui: Instance = nil
+    if UserInputService.VREnabled then
+        local NewScreenGui = NexusVRCore.ScreenGui3D.new()
+        NewScreenGui.Name = "LocalAudioSubtitlesVR"
+        NewScreenGui.ResetOnSpawn = false
+        NewScreenGui.Enabled = false
+        NewScreenGui.CanvasSize = Vector2.new(1200, 800)
+        NewScreenGui.PointingEnabled = false
+        NewScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+        ScreenGui = NewScreenGui:GetContainer()
+
+        Scope:Observer(BackgroundSize):onBind(function()
+            NewScreenGui.Enabled = Fusion.peek(BackgroundSize).Y.Offset > 0
+        end)
+    else
+        ScreenGui = Scope:New("ScreenGui")({
+            Name = "LocalAudioSubtitles",
+            DisplayOrder = 100,
+            ResetOnSpawn = false,
+            Enabled = Scope:Computed(function(use)
+                return use(BackgroundSize).Y.Offset > 0
+            end),
+            Parent = Players.LocalPlayer:WaitForChild("PlayerGui"),
+        })
+    end
+
+
     --Create the user interface.
-    Scope:New("ScreenGui")({
-        Name = "LocalAudioSubtitles",
-        DisplayOrder = 100,
-        ResetOnSpawn = false,
-        Enabled = Scope:Computed(function(use)
-            return use(BackgroundSize).Y.Offset > 0
-        end),
-        Parent = Players.LocalPlayer:WaitForChild("PlayerGui"),
+    Scope:Hydrate(ScreenGui)({
         [Children] = {
             --Row adorn.
             Scope:New("Frame")({
@@ -197,47 +223,8 @@ function SubtitleWindow.new(): SubtitleWindow
         },
     })
 
-    --Connect Nexus VR Core being load.
-    --Nexus VR Character Model is typically loaded from an id, so Nexus VR Core can appear at any time.
-    if UserInputService.VREnabled then
-        if ReplicatedStorage:FindFirstChild("NexusVRCore") then
-            self:LoadNexusVRCore()
-        else
-            ReplicatedStorage.ChildAdded:Connect(function(Child)
-                if Child.Name ~= "NexusVRCore" then return end
-                self:LoadNexusVRCore()
-            end)
-        end
-    end
-
     --Return the object.
     return self 
-end
-
---[[
-Sets up Nexus VR Core if it is loaded.
---]]
-function SubtitleWindow.LoadNexusVRCore(self: SubtitleWindow): ()
-    if not self.ScreenGui:IsA("ScreenGui") then return end
-
-    --Replace the ScreenGui.
-    local ScreenGui3D = require(ReplicatedStorage:WaitForChild("NexusVRCore"):WaitForChild("Container"):WaitForChild("ScreenGui3D")) :: any
-    local NewScreenGui = ScreenGui3D.new()
-    NewScreenGui.Name = "LocalAudioSubtitlesVR"
-    NewScreenGui.DisplayOrder = 100
-    NewScreenGui.ResetOnSpawn = false
-    NewScreenGui.Enabled = self.ScreenGui.Enabled
-    NewScreenGui.CanvasSize = Vector2.new(1200, 800)
-	NewScreenGui.PointingEnabled = false
-    NewScreenGui.Parent = self.ScreenGui.Parent
-
-    --Resize the background container.
-    self.RowAdornFrame.Size = UDim2.new(0.9, 0, 0.055, 0)
-    self.RowAdornFrame.Parent = NewScreenGui:GetContainer()
-
-    --Remove the existing ScreenGui.
-    self.ScreenGui:Destroy()
-    self.ScreenGui = NewScreenGui
 end
 
 --[[
