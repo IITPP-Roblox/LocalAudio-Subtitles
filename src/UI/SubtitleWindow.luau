@@ -1,24 +1,30 @@
 --Main window for showing subtitles.
 --!strict
 
+local MINIMUM_TEXT_SIZE = 12
+local TEXT_SIZE_RELATIVE = 0.03
+local TEXT_SIZE_RELATIVE_VR = 0.055
+local UI_CORNER_RELATIVE = 0.2
+local BOTTOM_MARGIN_PIXEL = 5
+
+local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
 
 local SubtitleEntry = require(script.Parent:WaitForChild("SubtitleEntry"))
-local TweenServicePlay = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("TweenServicePlay"))
+local SubtitleEntryCollection = require(script.Parent:WaitForChild("SubtitleEntryCollection"))
+local Fusion = require(script.Parent.Parent:WaitForChild("Packages"):WaitForChild("Fusion"))
+local NexusVRCore = require(script.Parent.Parent:WaitForChild("Packages"):WaitForChild("NexusVRCore"))
+
+local Children = Fusion.Children
 
 local SubtitleWindow = {}
 SubtitleWindow.__index = SubtitleWindow
 
 export type SubtitleWindow = {
-    LastSize: number,
-    SubtitleEntries: {SubtitleEntry.SubtitleEntry},
-    ScreenGui: ScreenGui,
-    RowAdornFrame: Frame,
-    BackgroundFrame: Frame,
-    BackgroundUICorner: UICorner,
+    _Scope: Fusion.Scope<typeof(Fusion)>,
+    _SubtitleEntries: SubtitleEntryCollection.SubtitleEntryCollection,
 } & typeof(setmetatable({}, SubtitleWindow))
 
 
@@ -27,172 +33,205 @@ export type SubtitleWindow = {
 Creates a subtitle window.
 --]]
 function SubtitleWindow.new(): SubtitleWindow
-    --Create the object.
-    local self = setmetatable({
-        LastSize = 0,
-        SubtitleEntries = {},
-    }, SubtitleWindow) :: SubtitleWindow
-
-    --Create the user interface.
-    local SubtitlesScreenGui = Instance.new("ScreenGui")
-    SubtitlesScreenGui.Name = "LocalAudioSubtitles"
-    SubtitlesScreenGui.DisplayOrder = 100
-    SubtitlesScreenGui.ResetOnSpawn = false
-    SubtitlesScreenGui.Enabled = false
-    SubtitlesScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-    self.ScreenGui = SubtitlesScreenGui
-
-    local RowAdornFrame = Instance.new("Frame")
-    RowAdornFrame.AnchorPoint = Vector2.new(0.5, 1)
-    RowAdornFrame.BackgroundTransparency = 1
-    RowAdornFrame.Position = UDim2.new(0.5, 0, 0.9, 0)
-    RowAdornFrame.Size = UDim2.new(0.9, 0, 0.03, 0)
-    RowAdornFrame.Parent = SubtitlesScreenGui
-    self.RowAdornFrame = RowAdornFrame
-
-    local BackgroundFrame = Instance.new("Frame")
-    BackgroundFrame.AnchorPoint = Vector2.new(0, 1)
-    BackgroundFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    BackgroundFrame.BackgroundTransparency = 0.5 * GuiService.PreferredTransparency
-    BackgroundFrame.BorderSizePixel = 0
-    BackgroundFrame.Position = UDim2.new(0, 0, 1, 0)
-    BackgroundFrame.Size = UDim2.new(1, 0, 0, 0)
-    BackgroundFrame.Parent = RowAdornFrame
-    self.BackgroundFrame = BackgroundFrame
-
+    --Create the values.
+    local Scope = Fusion.scoped(Fusion) :: Fusion.Scope<typeof(Fusion)>
+    local BackgroundTransparency = Scope:Value(0.5 * GuiService.PreferredTransparency)
     GuiService:GetPropertyChangedSignal("PreferredTransparency"):Connect(function()
-        BackgroundFrame.BackgroundTransparency = 0.5 * GuiService.PreferredTransparency
+        BackgroundTransparency:set(0.5 * GuiService.PreferredTransparency)
     end)
 
-    local BackgroundUICorner = Instance.new("UICorner")
-    BackgroundUICorner.CornerRadius = UDim.new(0.2, 0)
-    BackgroundUICorner.Parent = BackgroundFrame
-    self.BackgroundUICorner = BackgroundUICorner
-
-    --Connect Nexus VR Core being load.
-    --Nexus VR Character Model is typically loaded from an id, so Nexus VR Core can appear at any time.
+    local ViewportSize = Scope:Value(Workspace.CurrentCamera.ViewportSize)
     if UserInputService.VREnabled then
-        if ReplicatedStorage:FindFirstChild("NexusVRCore") then
-            self:LoadNexusVRCore()
-        else
-            ReplicatedStorage.ChildAdded:Connect(function(Child)
-                if Child.Name ~= "NexusVRCore" then return end
-                self:LoadNexusVRCore()
+        --VR uses a custom container at a fixed size.
+        ViewportSize:set(Vector2.new(1200, 800))
+    else
+        Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+            ViewportSize:set(Workspace.CurrentCamera.ViewportSize)
+        end)
+    end
+
+    local TextSize = Scope:Computed(function(use)
+        return math.max(MINIMUM_TEXT_SIZE, (UserInputService.VREnabled and TEXT_SIZE_RELATIVE_VR or TEXT_SIZE_RELATIVE) * use(ViewportSize).Y)
+    end) :: Fusion.UsedAs<number>
+    local MaxTextWidth = Scope:Computed(function(use)
+        return (0.9 * use(ViewportSize).X) - (2 * UI_CORNER_RELATIVE * use(TextSize))
+    end) :: Fusion.UsedAs<number>
+
+    --Prepare the TweenInfo.
+    local ReducedMotionEnabled = Scope:Value(GuiService.ReducedMotionEnabled)
+    GuiService:GetPropertyChangedSignal("ReducedMotionEnabled"):Connect(function()
+        ReducedMotionEnabled:set(GuiService.ReducedMotionEnabled)
+    end)
+    local PropertyTween = Scope:Computed(function(use)
+        return (use(ReducedMotionEnabled) and TweenInfo.new(0) or TweenInfo.new(SubtitleEntry.FadeAnimationTimeSeconds))
+    end)
+
+    --Create the object.
+    local self = setmetatable({
+        _Scope = Scope,
+        _SubtitleEntries = SubtitleEntryCollection.new(TextSize, MaxTextWidth),
+    }, SubtitleWindow) :: SubtitleWindow
+
+    --Create the list of subtitle entry labels.
+    --This is manually managed due to issues with Fusion re-rendering labels when the list indices change.
+    --Using the entires as keys doesn't resolve the issue either.
+    local SubtitleLabels = Scope:Value({})
+    Scope:Observer(self._SubtitleEntries.DisplayedEntries):onBind(function()
+        --Create the entries that don't exist.
+        local CurrentSubtitleLabels = Fusion.peek(SubtitleLabels)
+        local CurrentEntries = Fusion.peek(self._SubtitleEntries.DisplayedEntries)
+        local ChangesMade = false
+        for _, Entry in CurrentEntries do
+            if CurrentSubtitleLabels[Entry] then continue end
+            ChangesMade = true
+
+            --Create the text label.
+            --This is done to set the TextTransparency as 1 first, and then animate in.
+            local LabelScope = Fusion.innerScope(Scope)
+            local TextTransparency = LabelScope:Value(1)
+            local SubtitleLabel = LabelScope:New("TextLabel")({
+                AnchorPoint = Vector2.new(0, 1),
+                Size = LabelScope:Computed(function(use)
+                    return UDim2.new(1, -(2 * UI_CORNER_RELATIVE) * use(TextSize), 0, use(Entry.Height))
+                end),
+                Position = LabelScope:Tween(LabelScope:Computed(function(use)
+                    return UDim2.new(0, UI_CORNER_RELATIVE * use(TextSize), 1, use(Entry.YOffset) - BOTTOM_MARGIN_PIXEL)
+                end), PropertyTween),
+                BackgroundTransparency = 1,
+                Font = Enum.Font.SourceSans,
+                Text = Entry.DisplayMessage,
+                RichText = true,
+                TextColor3 = Color3.fromRGB(255, 255, 255),
+                TextTransparency = LabelScope:Tween(TextTransparency, PropertyTween),
+                TextSize = TextSize,
+                TextWrapped = true,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                ZIndex = 2,
+            })
+            CurrentSubtitleLabels[Entry] = {
+                Scope = LabelScope,
+                Label = SubtitleLabel,
+            }
+
+            --Set the text transparency afterwards for it to tween in.
+            LabelScope:Observer(Entry.VisibleState):onBind(function()
+                TextTransparency:set(Fusion.peek(Entry.VisibleState) == "Visible" and 0 or 1)
             end)
         end
+
+        --Remove the cleared values.
+        --Done in 2 steps to avoid modifying a table being iterated over.
+        local EntriesToRemove = {}
+        for Entry, _ in CurrentSubtitleLabels do
+            if table.find(CurrentEntries, Entry :: SubtitleEntry.SubtitleEntry) then continue end
+            table.insert(EntriesToRemove, Entry)
+        end
+        for _, Entry in EntriesToRemove do
+            ChangesMade = true
+            CurrentSubtitleLabels[Entry].Scope:doCleanup()
+            CurrentSubtitleLabels[Entry] = nil
+        end
+
+        --Store the changes.
+        if not ChangesMade then return end
+        SubtitleLabels:set(CurrentSubtitleLabels)
+    end)
+
+    --Create the value for the background size.
+    --This is used to toggle the ScreenGui being enabled.
+    local BackgroundSize = Scope:Tween(Scope:Computed(function(use)
+        local TotalHeight = 0
+        for _, Entry in use(self._SubtitleEntries.DisplayedEntries) do
+            TotalHeight += use(Entry.Height)
+        end
+        if TotalHeight > 0 then
+            TotalHeight += BOTTOM_MARGIN_PIXEL
+        end
+        return UDim2.new(1, 0, 0, TotalHeight)
+    end), PropertyTween)
+
+    --Create the ScreenGui.
+    local ScreenGui: Instance = nil
+    if UserInputService.VREnabled then
+        local NewScreenGui = NexusVRCore.ScreenGui3D.new()
+        NewScreenGui.Name = "LocalAudioSubtitlesVR"
+        NewScreenGui.ResetOnSpawn = false
+        NewScreenGui.Enabled = false
+        NewScreenGui.CanvasSize = Vector2.new(1200, 800)
+        NewScreenGui.PointingEnabled = false
+        NewScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+        ScreenGui = NewScreenGui:GetContainer()
+
+        Scope:Observer(BackgroundSize):onBind(function()
+            NewScreenGui.Enabled = Fusion.peek(BackgroundSize).Y.Offset > 0
+        end)
+    else
+        ScreenGui = Scope:New("ScreenGui")({
+            Name = "LocalAudioSubtitles",
+            DisplayOrder = 100,
+            ResetOnSpawn = false,
+            Enabled = Scope:Computed(function(use)
+                return use(BackgroundSize).Y.Offset > 0
+            end),
+            Parent = Players.LocalPlayer:WaitForChild("PlayerGui"),
+        })
     end
+
+
+    --Create the user interface.
+    Scope:Hydrate(ScreenGui)({
+        [Children] = {
+            --Row adorn.
+            Scope:New("Frame")({
+                AnchorPoint = Vector2.new(0.5, 1),
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0.5, 0, 0.9, 0),
+                Size = UDim2.new(0.9, 0, 0.03, 0),
+                [Children] = {
+                    --Subtitle entries.
+                    Scope:ForValues(SubtitleLabels, function(use, Scope: Fusion.Scope<typeof(Fusion)>, Entry)
+                        return Entry.Label
+                    end) :: any,
+
+                    --Background.
+                    Scope:New("Frame")({
+                        AnchorPoint = Vector2.new(0, 1),
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+                        BackgroundTransparency = BackgroundTransparency,
+                        BorderSizePixel = 0,
+                        Position = UDim2.new(0, 0, 1, 0),
+                        Size = Scope:Tween(Scope:Computed(function(use)
+                            local TotalHeight = 0
+                            for _, Entry in use(self._SubtitleEntries.DisplayedEntries) do
+                                TotalHeight += use(Entry.Height)
+                            end
+                            if TotalHeight > 0 then
+                                TotalHeight += BOTTOM_MARGIN_PIXEL
+                            end
+                            return UDim2.new(1, 0, 0, TotalHeight)
+                        end), PropertyTween),
+                        [Children] = {
+                            Scope:New("UICorner")({
+                                CornerRadius = Scope:Computed(function(use)
+                                    return UDim.new(0, UI_CORNER_RELATIVE * use(TextSize))
+                                end),
+                            }),
+                        },
+                    }),
+                },
+            }),
+        },
+    })
 
     --Return the object.
     return self 
 end
 
 --[[
-Sets up Nexus VR Core if it is loaded.
---]]
-function SubtitleWindow.LoadNexusVRCore(self: SubtitleWindow): ()
-    if not self.ScreenGui:IsA("ScreenGui") then return end
-
-    --Replace the ScreenGui.
-    local ScreenGui3D = require(ReplicatedStorage:WaitForChild("NexusVRCore"):WaitForChild("Container"):WaitForChild("ScreenGui3D")) :: any
-    local NewScreenGui = ScreenGui3D.new()
-    NewScreenGui.Name = "LocalAudioSubtitlesVR"
-    NewScreenGui.DisplayOrder = 100
-    NewScreenGui.ResetOnSpawn = false
-    NewScreenGui.Enabled = self.ScreenGui.Enabled
-    NewScreenGui.CanvasSize = Vector2.new(1200, 800)
-	NewScreenGui.PointingEnabled = false
-    NewScreenGui.Parent = self.ScreenGui.Parent
-
-    --Resize the background container.
-    self.RowAdornFrame.Size = UDim2.new(0.9, 0, 0.055, 0)
-    self.RowAdornFrame.Parent = NewScreenGui:GetContainer()
-
-    --Remove the existing ScreenGui.
-    self.ScreenGui:Destroy()
-    self.ScreenGui = NewScreenGui
-end
-
---[[
-Returns the entries that are visible.
---]]
-function SubtitleWindow.GetVisibleEntries(self: SubtitleWindow): {SubtitleEntry.SubtitleEntry}
-    local VisibleSubtitles = {}
-    for _, Subtitle in self.SubtitleEntries do
-        if not Subtitle.Visible then continue end
-        table.insert(VisibleSubtitles, Subtitle)
-    end
-    return VisibleSubtitles
-end
-
---[[
-Tweens the background to a specific size.
---]]
-function SubtitleWindow.TweenBackground(self: SubtitleWindow, Rows: number): ()
-    TweenServicePlay(self.BackgroundFrame, TweenInfo.new(0.1), {
-        Size = UDim2.new(1, 0, Rows, 0),
-    })
-    TweenServicePlay(self.BackgroundUICorner, TweenInfo.new(0.1), {
-        CornerRadius = UDim.new(0.25 * (1 / math.max(1, Rows)), 0),
-    })
-end
-
---[[
-Updates the size of the window.
---]]
-function SubtitleWindow.UpdateSize(self: SubtitleWindow): ()
-    --Update the entries.
-    local SubtitleEntries = self:GetVisibleEntries()
-    for _, Entry in SubtitleEntries do
-        Entry:UpdatePosition()
-    end
-
-    --Update the background.
-    local CurrentSize = #SubtitleEntries
-    self:TweenBackground(CurrentSize)
-    if CurrentSize >= self.LastSize then
-        self.ScreenGui.Enabled = true
-    elseif #SubtitleEntries == 0 then
-        task.delay(0.1, function()
-            if #self:GetVisibleEntries() ~= 0 then return end
-            self.ScreenGui.Enabled = false
-        end)
-    end
-	self.LastSize = CurrentSize
-end
-
---[[
 Shows a subtitle in the window.
 --]]
 function SubtitleWindow.ShowSubtitle(self: SubtitleWindow, Message: string, Duration: number, ReferenceSound: Sound?): ()
-    --Add to an existing message if one exists.
-    local Entry = nil
-    for _, ExistingEntry in self.SubtitleEntries do
-        if ExistingEntry.Message ~= Message then continue end
-        if ExistingEntry.Clearing then continue end
-        if ReferenceSound then
-            ExistingEntry:AddReferenceSound(ReferenceSound)
-        else
-            ExistingEntry:AddMultiple()
-        end
-        Entry = ExistingEntry
-        break
-    end
-
-    --Create the entry.
-    if not Entry then
-        Entry = SubtitleEntry.new(Message, self, ReferenceSound)
-    end
-
-    --Remove the entry after the duration.
-    task.delay(Duration, function()
-        if ReferenceSound then
-            Entry:RemoveReferenceSound(ReferenceSound)
-        else
-            Entry:RemoveMultiple()
-        end
-        if Entry.Multiple ~= 0 then return end
-        Entry:Destroy()
-    end)
+    self._SubtitleEntries:AddEntry(Message, Duration, ReferenceSound)
 end
 
 
